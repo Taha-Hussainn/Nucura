@@ -1,426 +1,320 @@
-// pages/Home.jsx
-import { Heart, Brain, Baby, Shield, Users, Star, Award, Calendar, CheckCircle, ArrowRight, Stethoscope, Eye, Bone, User, Ear, Pill } from 'lucide-react'
+import { Shield, Users, Calendar, CheckCircle, ArrowRight, Stethoscope, Eye, Bone, User, Ear, Pill, Brain, Baby, Heart, Award, Zap, MessageCircle, FileText, Upload, Star } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { useState, useEffect } from 'react'
 
 const Home = () => {
+  const [activeTestimonial, setActiveTestimonial] = useState(0)
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setActiveTestimonial(prev => (prev + 1) % 3)
+    }, 4000)
+    return () => clearInterval(interval)
+  }, [])
+
   const specializations = [
-    { name: 'Cardiologist', icon: <Heart className="h-8 w-8" />, count: 8 },
-    { name: 'Neurologist', icon: <Brain className="h-8 w-8" />, count: 4 },
-    { name: 'Pediatrician', icon: <Baby className="h-8 w-8" />, count: 9 },
-    { name: 'Dentist', icon: <Stethoscope className="h-8 w-8" />, count: 12 },
-    { name: 'Dermatologist', icon: <Shield className="h-8 w-8" />, count: 7 },
-    { name: 'Orthopedic', icon: <Bone className="h-8 w-8" />, count: 6 },
-    { name: 'Gynecologist', icon: <User className="h-8 w-8" />, count: 11 },
-    { name: 'ENT Specialist', icon: <Ear className="h-8 w-8" />, count: 5 },
-    { name: 'Psychiatrist', icon: <Brain className="h-8 w-8" />, count: 3 },
-    { name: 'Ophthalmologist', icon: <Eye className="h-8 w-8" />, count: 4 },
-    { name: 'Gastroenterologist', icon: <Pill className="h-8 w-8" />, count: 4 },
-    { name: 'General Physician', icon: <Stethoscope className="h-8 w-8" />, count: 15 },
+    { name: 'Cardiologist', icon: <Heart className="h-6 w-6" />, count: 8 },
+    { name: 'Neurologist', icon: <Brain className="h-6 w-6" />, count: 4 },
+    { name: 'Pediatrician', icon: <Baby className="h-6 w-6" />, count: 9 },
+    { name: 'Dentist', icon: <Stethoscope className="h-6 w-6" />, count: 12 },
+    { name: 'Dermatologist', icon: <Shield className="h-6 w-6" />, count: 7 },
+    { name: 'Orthopedic', icon: <Bone className="h-6 w-6" />, count: 6 },
+    { name: 'Gynecologist', icon: <User className="h-6 w-6" />, count: 11 },
+    { name: 'ENT Specialist', icon: <Ear className="h-6 w-6" />, count: 5 },
+    { name: 'Psychiatrist', icon: <Brain className="h-6 w-6" />, count: 3 },
+    { name: 'Ophthalmologist', icon: <Eye className="h-6 w-6" />, count: 4 },
+    { name: 'Gastroenterologist', icon: <Pill className="h-6 w-6" />, count: 4 },
+    { name: 'General Physician', icon: <Stethoscope className="h-6 w-6" />, count: 15 },
   ]
 
   const features = [
-    {
-      icon: <Shield className="h-8 w-8" />,
-      title: "Verified Doctors",
-      description: "All doctors are verified with proper credentials and experience"
-    },
-    {
-      icon: <Calendar className="h-8 w-8" />,
-      title: "Easy Booking",
-      description: "Simple 3-step booking process in under 2 minutes"
-    },
-    {
-      icon: <Users className="h-8 w-8" />,
-      title: "24/7 Support",
-      description: "Round-the-clock customer support for all your queries"
-    },
-    {
-      icon: <Award className="h-8 w-8" />,
-      title: "Quality Care",
-      description: "Access to top-rated specialists and hospitals"
-    }
+    { icon: <Shield className="h-6 w-6" />, title: "Verified Doctors", description: "All doctors are verified with proper credentials and experience", bg: "bg-blue-50", text: "text-blue-600" },
+    { icon: <Zap className="h-6 w-6" />, title: "Instant Booking", description: "Simple 3-step booking process completed in under 2 minutes", bg: "bg-teal-50", text: "text-teal-600" },
+    { icon: <MessageCircle className="h-6 w-6" />, title: "Direct Chat", description: "Message your doctor directly through our secure chat system", bg: "bg-indigo-50", text: "text-indigo-600" },
+    { icon: <FileText className="h-6 w-6" />, title: "Digital Prescriptions", description: "Receive and print digital prescriptions from your doctor", bg: "bg-cyan-50", text: "text-cyan-600" },
+    { icon: <Upload className="h-6 w-6" />, title: "Medical Records", description: "Store and access all your medical documents in one place", bg: "bg-sky-50", text: "text-sky-600" },
+    { icon: <Award className="h-6 w-6" />, title: "Quality Care", description: "Access to top-rated specialists and premium hospitals", bg: "bg-blue-50", text: "text-blue-600" }
   ]
 
   const testimonials = [
-    {
-      name: "Mahad Hasan",
-      role: "Patient",
-      content: "Found the perfect cardiologist through Nucura. The booking was seamless and the doctor was excellent!",
-      rating: 5
-    },
-    {
-      name: "Ayesha Khan",
-      role: "Patient",
-      content: "Emergency appointment booking saved my mother's life. The response time was incredible!",
-      rating: 5
-    },
-    {
-      name: "Dr. Ahmed Raza",
-      role: "Cardiologist",
-      content: "Great platform to connect with patients. The management system makes my practice more efficient.",
-      rating: 4
-    }
+    { name: "Mahad Hasan", role: "Patient", content: "Found the perfect cardiologist through Nucura. The booking was seamless and the doctor was excellent!", rating: 5, avatar: "MH" },
+    { name: "Ayesha Khan", role: "Patient", content: "Emergency appointment booking saved my mother's life. The response time was incredible!", rating: 5, avatar: "AK" },
+    { name: "Dr. Ahmed Raza", role: "Cardiologist", content: "Great platform to connect with patients. The management system makes my practice more efficient.", rating: 4, avatar: "AR" }
   ]
 
   const stats = [
     { value: "85+", label: "Verified Doctors" },
-    { value: "1000+", label: "Happy Patients" },
-    { value: "5+", label: "Cities Across Pakistan" },
+    { value: "1,000+", label: "Happy Patients" },
+    { value: "5+", label: "Cities in Pakistan" },
     { value: "4.8", label: "Average Rating" }
   ]
 
   return (
-    <div className="space-y-16">
-      {/* Hero Section with Background Image */}
-      <section className="relative bg-gradient-to-r from-red-600 to-red-700 py-20 md:py-32 overflow-hidden">
-        {/* Background Pattern */}
-        <div className="absolute inset-0 opacity-15">
-          <div className="absolute top-10 left-10">
-            <Heart className="h-24 w-24 text-white" />
-          </div>
-          <div className="absolute bottom-10 right-10">
-            <Stethoscope className="h-24 w-24 text-white" />
-          </div>
-          <div className="absolute top-1/4 right-1/4">
-            <Shield className="h-16 w-16 text-white" />
-          </div>
-          <div className="absolute bottom-1/4 left-1/4">
-            <Users className="h-16 w-16 text-white" />
-          </div>
+    <div className="overflow-hidden">
+
+      {/* ── HERO ── */}
+      <section className="relative bg-gradient-to-br from-slate-900 via-blue-950 to-teal-900 min-h-screen flex items-center">
+        <div className="absolute inset-0">
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-900/50 to-teal-900/30"></div>
+          <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-teal-800/20 to-transparent"></div>
         </div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="text-center">
-            {/* Main Heading */}
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight">
-              Your Health Journey
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 py-24">
+          <div className="max-w-3xl">
+            <div className="inline-flex items-center bg-blue-500/10 border border-blue-400/20 rounded-full px-4 py-2 mb-8">
+              <span className="w-2 h-2 bg-teal-400 rounded-full mr-2"></span>
+              <span className="text-blue-200 text-sm font-medium">Pakistan's Trusted Healthcare Platform</span>
+            </div>
+
+            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight">
+              Healthcare Made
               <br />
-              <span className="text-red-100">Starts Here</span>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-300 to-blue-300">
+                Simple & Accessible
+              </span>
             </h1>
-            
-            {/* Subheading */}
-            <p className="text-xl md:text-2xl text-white/90 mb-10 max-w-3xl mx-auto leading-relaxed">
-              Connect with Pakistan's top doctors. Experience healthcare that's accessible, 
-              reliable, and tailored to your needs.
+
+            <p className="text-lg md:text-xl text-blue-100 opacity-80 mb-10 max-w-2xl leading-relaxed">
+              Connect with Pakistan's top verified doctors. Book appointments, consult online,
+              manage prescriptions and medical records — all in one secure platform.
             </p>
-            
-            {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-6 justify-center mb-12">
-              <Link
-                to="/doctors"
-                className="bg-white text-red-600 px-8 py-4 rounded-xl font-semibold hover:bg-gray-100 transition duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 text-lg inline-flex items-center justify-center"
-              >
-                <Stethoscope className="h-5 w-5 mr-2" />
+
+            <div className="flex flex-col sm:flex-row gap-4 mb-12">
+              <Link to="/doctors"
+                className="bg-teal-500 hover:bg-teal-400 text-white px-8 py-4 rounded-xl font-semibold transition-all duration-200 text-base inline-flex items-center justify-center shadow-lg shadow-teal-500/25">
                 Find a Doctor
+                <ArrowRight className="h-5 w-5 ml-2" />
               </Link>
-              <Link
-                to="/signup"
-                className="bg-transparent border-2 border-white text-white px-8 py-4 rounded-xl font-semibold hover:bg-white hover:text-red-600 transition duration-300 text-lg inline-flex items-center justify-center"
-              >
-                <Users className="h-5 w-5 mr-2" />
-                Join Now Free
+              <Link to="/signup"
+                className="bg-white/10 hover:bg-white/20 border border-white/20 text-white px-8 py-4 rounded-xl font-semibold transition-all duration-200 text-base inline-flex items-center justify-center">
+                Create Free Account
               </Link>
             </div>
-            
-            {/* Trust Indicators */}
-            <div className="flex flex-wrap justify-center items-center gap-8 text-white/80">
-              <div className="flex items-center">
-                <CheckCircle className="h-5 w-5 text-green-300 mr-2" />
-                <span>Verified Doctors</span>
-              </div>
-              <div className="flex items-center">
-                <CheckCircle className="h-5 w-5 text-green-300 mr-2" />
-                <span>Instant Booking</span>
-              </div>
-              <div className="flex items-center">
-                <CheckCircle className="h-5 w-5 text-green-300 mr-2" />
-                <span>24/7 Support</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
 
-      {/* Stats Section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-          {stats.map((stat, index) => (
-            <div key={index} className="text-center">
-              <div className="text-4xl md:text-5xl font-bold text-red-600 mb-2">{stat.value}</div>
-              <p className="text-gray-600">{stat.label}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Specializations Section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center mb-10">
-          <div>
-            <h2 className="text-3xl font-bold text-gray-900">Find by Medical Specialization</h2>
-            <p className="text-gray-600 mt-2">Choose from our expert doctors across various specialties</p>
-          </div>
-          <Link
-            to="/doctors"
-            className="text-red-600 font-semibold hover:text-red-700 flex items-center"
-          >
-            View All Specializations
-            <ArrowRight className="h-5 w-5 ml-2" />
-          </Link>
-        </div>
-        
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-          {specializations.map((spec) => (
-            <Link
-              key={spec.name}
-              to={`/doctors?specialization=${spec.name.toLowerCase()}`}
-              className="group bg-white p-4 sm:p-6 rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 border border-gray-100 text-center"
-            >
-              <div className="inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 bg-red-100 rounded-full mb-3 sm:mb-4 group-hover:bg-red-600 group-hover:text-white transition-colors mx-auto">
-                <div className="text-red-600 group-hover:text-white">
-                  {spec.icon}
+            <div className="flex flex-wrap gap-6">
+              {['Verified Doctors', 'Instant Booking', '24/7 Support', 'Secure Platform'].map((item, i) => (
+                <div key={i} className="flex items-center space-x-2 text-blue-200 text-sm">
+                  <CheckCircle className="h-4 w-4 text-teal-400" />
+                  <span>{item}</span>
                 </div>
-              </div>
-              <h3 className="font-semibold text-gray-800 text-sm sm:text-base mb-1 group-hover:text-red-600">{spec.name}</h3>
-              <p className="text-gray-500 text-xs sm:text-sm">{spec.count} Doctors</p>
-            </Link>
-          ))}
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="absolute bottom-0 left-0 right-0">
+          <svg viewBox="0 0 1440 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M0 60L1440 60L1440 20C1200 50 960 60 720 50C480 40 240 10 0 30Z" fill="#f8fafc"/>
+          </svg>
         </div>
       </section>
 
-      {/* How It Works */}
-      <section className="bg-gradient-to-b from-gray-50 to-white py-16">
+      {/* ── STATS ── */}
+      <section className="py-16 bg-slate-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">How Nucura Works</h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
-              Three simple steps to get the healthcare you need
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <div className="relative inline-block mb-6">
-                <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center">
-                  <Stethoscope className="h-10 w-10 text-red-600" />
-                </div>
-                <div className="absolute -top-2 -right-2 w-8 h-8 bg-red-600 text-white rounded-full flex items-center justify-center font-bold">
-                  1
-                </div>
-              </div>
-              <h3 className="text-xl font-semibold mb-3">Find Your Doctor</h3>
-              <p className="text-gray-600">
-                Browse through our verified specialists. View profiles, qualifications, and patient reviews.
-              </p>
-            </div>
-            
-            <div className="text-center">
-              <div className="relative inline-block mb-6">
-                <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center">
-                  <Calendar className="h-10 w-10 text-red-600" />
-                </div>
-                <div className="absolute -top-2 -right-2 w-8 h-8 bg-red-600 text-white rounded-full flex items-center justify-center font-bold">
-                  2
-                </div>
-              </div>
-              <h3 className="text-xl font-semibold mb-3">Book Appointment</h3>
-              <p className="text-gray-600">
-                Select your preferred date and time. Get instant confirmation and appointment reminders.
-              </p>
-            </div>
-            
-            <div className="text-center">
-              <div className="relative inline-block mb-6">
-                <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center">
-                  <Users className="h-10 w-10 text-red-600" />
-                </div>
-                <div className="absolute -top-2 -right-2 w-8 h-8 bg-red-600 text-white rounded-full flex items-center justify-center font-bold">
-                  3
-                </div>
-              </div>
-              <h3 className="text-xl font-semibold mb-3">Consult & Recover</h3>
-              <p className="text-gray-600">
-                Visit clinic or consult online. Get prescriptions and follow-up care recommendations.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Features Section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">Why Choose Nucura?</h2>
-          <p className="text-gray-600 max-w-2xl mx-auto">
-            We're revolutionizing healthcare with technology and compassion
-          </p>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {features.map((feature, index) => (
-            <div key={index} className="bg-white p-6 sm:p-8 rounded-2xl shadow-lg hover:shadow-xl transition-shadow border border-gray-100">
-              <div className="inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 bg-red-100 rounded-full mb-4 sm:mb-6">
-                <div className="text-red-600">
-                  {feature.icon}
-                </div>
-              </div>
-              <h3 className="text-lg sm:text-xl font-semibold mb-2 sm:mb-3">{feature.title}</h3>
-              <p className="text-gray-600 text-sm sm:text-base">{feature.description}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Testimonials */}
-      <section className="bg-gray-50 py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Trusted by Patients & Doctors</h2>
-            <p className="text-gray-600">Real stories from our healthcare community</p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {testimonials.map((testimonial, index) => (
-              <div key={index} className="bg-white p-6 sm:p-8 rounded-2xl shadow-lg">
-                <div className="flex items-center mb-4 sm:mb-6">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-red-100 rounded-full flex items-center justify-center mr-3 sm:mr-4">
-                    <Users className="h-5 w-5 sm:h-6 sm:w-6 text-red-600" />
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-sm sm:text-base">{testimonial.name}</h4>
-                    <p className="text-gray-600 text-xs sm:text-sm">{testimonial.role}</p>
-                  </div>
-                </div>
-                
-                <div className="flex mb-3 sm:mb-4">
-                  {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={i}
-                      className={`h-4 w-4 sm:h-5 sm:w-5 ${i < testimonial.rating ? 'text-yellow-400 fill-current' : 'text-gray-300'}`}
-                    />
-                  ))}
-                </div>
-                
-                <p className="text-gray-700 italic text-sm sm:text-base">"{testimonial.content}"</p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            {stats.map((stat, i) => (
+              <div key={i} className="text-center p-6 bg-white rounded-2xl border border-slate-100 shadow-sm">
+                <div className="text-3xl md:text-4xl font-bold text-blue-700 mb-1">{stat.value}</div>
+                <p className="text-slate-500 text-sm">{stat.label}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* About Nucura */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 items-center">
-          <div>
-            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4 sm:mb-6">
-              About <span className="text-red-600">Nucura</span>
-            </h2>
-            <p className="text-gray-600 mb-4 sm:mb-6 text-sm sm:text-base">
-              Nucura is Pakistan's premier digital healthcare platform, bridging the gap between 
-              patients and top medical professionals. Our mission is to make quality healthcare 
-              accessible, affordable, and convenient for every Pakistani.
-            </p>
-            
-            <div className="space-y-3 sm:space-y-4 mb-6 sm:mb-8">
-              <div className="flex items-start">
-                <CheckCircle className="h-5 w-5 sm:h-6 sm:w-6 text-green-500 mr-2 sm:mr-3 mt-0.5 flex-shrink-0" />
-                <div>
-                  <h4 className="font-semibold text-gray-900 text-sm sm:text-base">Rigorous Doctor Verification</h4>
-                  <p className="text-gray-600 text-xs sm:text-sm">Every doctor undergoes thorough background checks and credential verification</p>
-                </div>
-              </div>
-              
-              <div className="flex items-start">
-                <CheckCircle className="h-5 w-5 sm:h-6 sm:w-6 text-green-500 mr-2 sm:mr-3 mt-0.5 flex-shrink-0" />
-                <div>
-                  <h4 className="font-semibold text-gray-900 text-sm sm:text-base">Secure Platform</h4>
-                  <p className="text-gray-600 text-xs sm:text-sm">Bank-level encryption and HIPAA compliance protect your health data</p>
-                </div>
-              </div>
-              
-              <div className="flex items-start">
-                <CheckCircle className="h-5 w-5 sm:h-6 sm:w-6 text-green-500 mr-2 sm:mr-3 mt-0.5 flex-shrink-0" />
-                <div>
-                  <h4 className="font-semibold text-gray-900 text-sm sm:text-base">Comprehensive Care</h4>
-                  <p className="text-gray-600 text-xs sm:text-sm">From consultation to follow-up, we're with you throughout your health journey</p>
-                </div>
-              </div>
+      {/* ── SPECIALIZATIONS ── */}
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-12">
+            <div>
+              <p className="text-teal-600 font-semibold text-sm uppercase tracking-wider mb-2">Specialties</p>
+              <h2 className="text-3xl md:text-4xl font-bold text-slate-900">Find the Right Specialist</h2>
+              <p className="text-slate-500 mt-2 text-base">Browse doctors across 12 medical specialties</p>
             </div>
-            
-            <Link
-              to="/about"
-              className="inline-flex items-center text-red-600 font-semibold hover:text-red-700 text-sm sm:text-base"
-            >
-              Learn more about Nucura
-              <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5 ml-2" />
+            <Link to="/doctors" className="mt-4 md:mt-0 inline-flex items-center text-blue-600 font-medium hover:text-blue-700 text-sm">
+              View all doctors <ArrowRight className="h-4 w-4 ml-1" />
             </Link>
           </div>
-          
-          <div className="relative">
-            <div className="bg-red-50 rounded-2xl p-4 sm:p-8">
-              <div className="grid grid-cols-2 gap-3 sm:gap-6">
-                <div className="bg-white rounded-xl p-4 sm:p-6 shadow-lg text-center">
-                  <div className="text-2xl sm:text-3xl text-red-600 font-bold mb-1 sm:mb-2">100%</div>
-                  <p className="text-gray-700 text-xs sm:text-sm">Doctor Verification</p>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+            {specializations.map((spec) => (
+              <Link key={spec.name} to={`/doctors?specialization=${spec.name.toLowerCase()}`}
+                className="group p-4 rounded-xl border border-slate-100 bg-slate-50 hover:bg-blue-600 hover:border-blue-600 transition-all duration-200 text-center">
+                <div className="inline-flex items-center justify-center w-10 h-10 bg-blue-100 group-hover:bg-white/20 rounded-lg mb-3 mx-auto transition-colors">
+                  <div className="text-blue-600 group-hover:text-white transition-colors">{spec.icon}</div>
                 </div>
-                <div className="bg-white rounded-xl p-4 sm:p-6 shadow-lg text-center">
-                  <div className="text-2xl sm:text-3xl text-red-600 font-bold mb-1 sm:mb-2">24/7</div>
-                  <p className="text-gray-700 text-xs sm:text-sm">Support Available</p>
+                <h3 className="font-medium text-slate-700 group-hover:text-white text-xs mb-1 transition-colors">{spec.name}</h3>
+                <p className="text-slate-400 group-hover:text-blue-100 text-xs transition-colors">{spec.count} Doctors</p>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── HOW IT WORKS ── */}
+      <section className="py-20 bg-slate-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <p className="text-teal-600 font-semibold text-sm uppercase tracking-wider mb-2">Process</p>
+            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-3">How Nucura Works</h2>
+            <p className="text-slate-500 max-w-xl mx-auto">Get the care you need in three straightforward steps</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              { icon: <Stethoscope className="h-8 w-8" />, title: "Find Your Doctor", desc: "Search verified specialists, review qualifications and patient ratings.", step: "01" },
+              { icon: <Calendar className="h-8 w-8" />, title: "Book Appointment", desc: "Select a convenient date and time slot. Receive instant confirmation.", step: "02" },
+              { icon: <CheckCircle className="h-8 w-8" />, title: "Receive Care", desc: "Consult your doctor, receive prescriptions and manage follow-ups.", step: "03" }
+            ].map((item, i) => (
+              <div key={i} className="relative bg-white p-8 rounded-2xl border border-slate-100 shadow-sm">
+                <div className="absolute top-6 right-6 text-5xl font-bold text-slate-100">{item.step}</div>
+                <div className="w-14 h-14 bg-blue-600 rounded-xl flex items-center justify-center text-white mb-6">
+                  {item.icon}
                 </div>
-                <div className="bg-white rounded-xl p-4 sm:p-6 shadow-lg text-center">
-                  <div className="text-2xl sm:text-3xl text-red-600 font-bold mb-1 sm:mb-2">10+</div>
-                  <p className="text-gray-700 text-xs sm:text-sm">Medical Fields</p>
-                </div>
-                <div className="bg-white rounded-xl p-4 sm:p-6 shadow-lg text-center">
-                  <div className="text-2xl sm:text-3xl text-red-600 font-bold mb-1 sm:mb-2">Instant</div>
-                  <p className="text-gray-700 text-xs sm:text-sm">Confirmation</p>
-                </div>
+                <h3 className="text-xl font-bold text-slate-900 mb-3">{item.title}</h3>
+                <p className="text-slate-500 leading-relaxed text-sm">{item.desc}</p>
               </div>
-              
-              <div className="mt-6 sm:mt-8 p-4 sm:p-6 bg-white rounded-xl border border-red-200">
-                <div className="flex items-center">
-                  <Award className="h-5 w-5 sm:h-6 sm:w-6 text-red-600 mr-2 sm:mr-3" />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── FEATURES ── */}
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <p className="text-teal-600 font-semibold text-sm uppercase tracking-wider mb-2">Features</p>
+            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-3">Everything in One Platform</h2>
+            <p className="text-slate-500 max-w-xl mx-auto">Comprehensive tools for patients and healthcare providers</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {features.map((feature, i) => (
+              <div key={i} className="p-6 rounded-xl border border-slate-100 hover:border-blue-200 hover:shadow-md transition-all duration-200 group">
+                <div className={`inline-flex items-center justify-center w-10 h-10 ${feature.bg} ${feature.text} rounded-lg mb-4`}>
+                  {feature.icon}
+                </div>
+                <h3 className="text-base font-bold text-slate-900 mb-2">{feature.title}</h3>
+                <p className="text-slate-500 text-sm leading-relaxed">{feature.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── TESTIMONIALS ── */}
+      <section className="py-20 bg-slate-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <p className="text-teal-600 font-semibold text-sm uppercase tracking-wider mb-2">Testimonials</p>
+            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-3">What Our Users Say</h2>
+            <p className="text-slate-500">Real experiences from patients and doctors</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {testimonials.map((testimonial, i) => (
+              <div key={i} onClick={() => setActiveTestimonial(i)}
+                className={`p-6 rounded-2xl border transition-all duration-300 cursor-pointer ${activeTestimonial === i ? 'bg-blue-600 border-blue-600 shadow-lg shadow-blue-200' : 'bg-white border-slate-100 hover:border-blue-200'}`}>
+                <div className="flex items-center space-x-3 mb-4">
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold text-sm ${activeTestimonial === i ? 'bg-white text-blue-600' : 'bg-blue-100 text-blue-600'}`}>
+                    {testimonial.avatar}
+                  </div>
                   <div>
-                    <h4 className="font-semibold text-gray-900 text-sm sm:text-base">Award-Winning Platform</h4>
-                    <p className="text-gray-600 text-xs sm:text-sm">Recognized as Best Healthcare Startup 2023</p>
+                    <h4 className={`font-semibold text-sm ${activeTestimonial === i ? 'text-white' : 'text-slate-900'}`}>{testimonial.name}</h4>
+                    <p className={`text-xs ${activeTestimonial === i ? 'text-blue-200' : 'text-slate-500'}`}>{testimonial.role}</p>
                   </div>
                 </div>
+                <div className="flex mb-3">
+                  {[...Array(5)].map((_, j) => (
+                    <Star key={j} className={`h-3 w-3 ${j < testimonial.rating ? (activeTestimonial === i ? 'text-yellow-300 fill-current' : 'text-yellow-400 fill-current') : 'text-slate-200'}`} />
+                  ))}
+                </div>
+                <p className={`text-sm leading-relaxed ${activeTestimonial === i ? 'text-blue-50' : 'text-slate-600'}`}>"{testimonial.content}"</p>
               </div>
+            ))}
+          </div>
+
+          <div className="flex justify-center space-x-2 mt-8">
+            {testimonials.map((_, i) => (
+              <button key={i} onClick={() => setActiveTestimonial(i)}
+                className={`h-1.5 rounded-full transition-all duration-300 ${activeTestimonial === i ? 'bg-blue-600 w-8' : 'bg-slate-300 w-4'}`} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── ABOUT ── */}
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+            <div>
+              <p className="text-teal-600 font-semibold text-sm uppercase tracking-wider mb-3">About Nucura</p>
+              <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-6">
+                Pakistan's Premier Digital Healthcare Platform
+              </h2>
+              <p className="text-slate-500 mb-8 leading-relaxed">
+                Nucura bridges the gap between patients and top medical professionals across Pakistan.
+                Our mission is to make quality healthcare accessible, affordable, and convenient for everyone.
+              </p>
+              <div className="space-y-4 mb-8">
+                {[
+                  { title: 'Rigorous Doctor Verification', desc: 'Every doctor undergoes thorough background checks and credential verification' },
+                  { title: 'Secure & Private Platform', desc: 'Bank-level encryption protects all your health data and communications' },
+                  { title: 'Complete Healthcare Management', desc: 'From booking to prescriptions, records and follow-ups in one place' }
+                ].map((item, i) => (
+                  <div key={i} className="flex items-start space-x-3">
+                    <CheckCircle className="h-5 w-5 text-teal-500 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <h4 className="font-semibold text-slate-800 text-sm">{item.title}</h4>
+                      <p className="text-slate-500 text-sm mt-0.5">{item.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <Link to="/about" className="inline-flex items-center text-blue-600 font-semibold hover:text-blue-700 text-sm">
+                Learn more about Nucura <ArrowRight className="h-4 w-4 ml-1" />
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              {[
+                { value: '100%', label: 'Doctor Verification', bg: 'bg-blue-600' },
+                { value: '24/7', label: 'Support Available', bg: 'bg-teal-600' },
+                { value: '12+', label: 'Medical Specialties', bg: 'bg-slate-700' },
+                { value: 'Instant', label: 'Appointment Booking', bg: 'bg-indigo-600' }
+              ].map((item, i) => (
+                <div key={i} className={`${item.bg} p-8 rounded-2xl text-white`}>
+                  <div className="text-2xl font-bold mb-1">{item.value}</div>
+                  <p className="text-sm opacity-80">{item.label}</p>
+                </div>
+              ))}
             </div>
           </div>
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="bg-gradient-to-r from-red-600 to-red-700 text-white py-12 sm:py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <Heart className="h-12 w-12 sm:h-16 sm:w-16 mx-auto mb-4 sm:mb-6" />
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 sm:mb-6">Begin Your Health Journey Today</h2>
-          <p className="text-lg sm:text-xl opacity-90 mb-8 sm:mb-10 max-w-3xl mx-auto">
-            Join over 1 million patients who trust Nucura for their healthcare. 
-            Experience the future of medical care with just a few clicks.
+      {/* ── CTA ── */}
+      <section className="py-20 bg-gradient-to-br from-blue-700 to-teal-700">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+            Ready to Get Started?
+          </h2>
+          <p className="text-blue-100 text-lg mb-10">
+            Join thousands of patients who manage their health with Nucura.
           </p>
-          
-          <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center">
-            <Link
-              to="/signup"
-              className="bg-white text-red-600 px-6 sm:px-8 py-3 sm:py-4 rounded-xl font-semibold hover:bg-gray-100 transition duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 text-base sm:text-lg inline-flex items-center justify-center"
-            >
-              <Users className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link to="/signup"
+              className="bg-white text-blue-700 px-8 py-4 rounded-xl font-bold hover:bg-blue-50 transition-all duration-200 shadow-lg text-base inline-flex items-center justify-center">
               Create Free Account
+              <ArrowRight className="h-5 w-5 ml-2" />
             </Link>
-            <Link
-              to="/doctors"
-              className="bg-transparent border-2 border-white text-white px-6 sm:px-8 py-3 sm:py-4 rounded-xl font-semibold hover:bg-white hover:text-red-600 transition duration-300 text-base sm:text-lg inline-flex items-center justify-center"
-            >
-              <Stethoscope className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
+            <Link to="/doctors"
+              className="bg-white/10 border border-white/30 text-white px-8 py-4 rounded-xl font-bold hover:bg-white/20 transition-all duration-200 text-base inline-flex items-center justify-center">
               Browse Doctors
             </Link>
           </div>
-          
-          <p className="mt-6 sm:mt-8 text-red-100 text-sm sm:text-base">
-            No hidden fees • Free registration • 100% secure platform
-          </p>
+          <p className="mt-6 text-blue-200 text-sm">No hidden fees • Free registration • 100% secure</p>
         </div>
       </section>
     </div>

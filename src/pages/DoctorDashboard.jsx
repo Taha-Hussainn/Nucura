@@ -35,78 +35,48 @@ const DoctorDashboard = () => {
     getCurrentUser().then(user => {
       if (!user) { navigate('/login'); return }
       setCurrentUser(user)
-      supabase.from('doctors').select('*').eq('id', user.id).single()
-        .then(({ data }) => {
-          if (data) {
-            setProfileData({
-              name: data.name || '',
-              specialization: data.specialization || '',
-              experience: data.experience || '',
-              fee: data.fee || '',
-              phone: data.contact?.phone || '',
-              hospital: data.hospital || '',
-              clinic: data.clinic || '',
-              location: data.location || '',
-              description: data.description || '',
-              available_time: data.available_time || '',
-              slots: data.slots?.join(', ') || ''
-            })
-          }
+      supabase.from('doctors').select('*').eq('id', user.id).single().then(({ data }) => {
+        if (data) setProfileData({
+          name: data.name || '', specialization: data.specialization || '',
+          experience: data.experience || '', fee: data.fee || '',
+          phone: data.contact?.phone || '', hospital: data.hospital || '',
+          clinic: data.clinic || '', location: data.location || '',
+          description: data.description || '', available_time: data.available_time || '',
+          slots: data.slots?.join(', ') || ''
         })
-      getAppointmentsByDoctor(user.id).then(result => {
-        if (result.success) setAppointments(result.data)
-        setLoading(false)
       })
-      getChatsByDoctor(user.id).then(result => {
-        if (result.success) setChats(result.data)
-      })
-      getPrescriptionsByDoctor(user.id).then(result => {
-        if (result.success) setPrescriptions(result.data)
-      })
+      getAppointmentsByDoctor(user.id).then(r => { if (r.success) setAppointments(r.data); setLoading(false) })
+      getChatsByDoctor(user.id).then(r => { if (r.success) setChats(r.data) })
+      getPrescriptionsByDoctor(user.id).then(r => { if (r.success) setPrescriptions(r.data) })
     })
   }, [])
 
   const handleSaveProfile = async () => {
     setSaving(true)
-    const slotsArray = profileData.slots
-      ? profileData.slots.split(',').map(s => s.trim()).filter(Boolean)
-      : []
+    const slotsArray = profileData.slots ? profileData.slots.split(',').map(s => s.trim()).filter(Boolean) : []
     await supabase.from('doctors').update({
-      name: profileData.name,
-      specialization: profileData.specialization,
-      experience: parseInt(profileData.experience) || 0,
-      fee: parseInt(profileData.fee) || 0,
-      hospital: profileData.hospital,
-      clinic: profileData.clinic,
-      location: profileData.location,
-      description: profileData.description,
-      available_time: profileData.available_time,
-      slots: slotsArray,
+      name: profileData.name, specialization: profileData.specialization,
+      experience: parseInt(profileData.experience) || 0, fee: parseInt(profileData.fee) || 0,
+      hospital: profileData.hospital, clinic: profileData.clinic, location: profileData.location,
+      description: profileData.description, available_time: profileData.available_time, slots: slotsArray,
       contact: { phone: profileData.phone, email: currentUser.email, website: '' }
     }).eq('id', currentUser.id)
-    await supabase.from('users').update({
-      name: profileData.name,
-      specialization: profileData.specialization,
-      phone: profileData.phone
-    }).eq('id', currentUser.id)
+    await supabase.from('users').update({ name: profileData.name, specialization: profileData.specialization, phone: profileData.phone }).eq('id', currentUser.id)
     setSaving(false)
-    alert('Profile updated successfully!')
+    alert('Profile updated!')
   }
 
   const handleApprove = async (id) => {
-    const result = await updateAppointmentStatus(id, 'confirmed')
-    if (result.success) setAppointments(prev => prev.map(a => a.id === id ? { ...a, status: 'confirmed' } : a))
+    const r = await updateAppointmentStatus(id, 'confirmed')
+    if (r.success) setAppointments(prev => prev.map(a => a.id === id ? { ...a, status: 'confirmed' } : a))
   }
 
   const handleReject = async (id) => {
-    const result = await updateAppointmentStatus(id, 'cancelled')
-    if (result.success) setAppointments(prev => prev.map(a => a.id === id ? { ...a, status: 'cancelled' } : a))
+    const r = await updateAppointmentStatus(id, 'cancelled')
+    if (r.success) setAppointments(prev => prev.map(a => a.id === id ? { ...a, status: 'cancelled' } : a))
   }
 
-  const handleLogout = async () => {
-    await logout()
-    navigate('/login')
-  }
+  const handleLogout = async () => { await logout(); navigate('/login') }
 
   const filteredAppointments = filter === 'all' ? appointments : appointments.filter(a => a.status === filter)
   const today = new Date().toISOString().split('T')[0]
@@ -117,310 +87,255 @@ const DoctorDashboard = () => {
     totalEarnings: appointments.filter(a => a.status === 'confirmed').reduce((sum, a) => sum + (a.fee || 0), 0)
   }
 
+  const inputClass = "w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+
+  const navItems = [
+    { key: 'appointments', label: 'Appointments', icon: <Calendar className="h-4 w-4 mr-3" />, badge: 0 },
+    { key: 'chats', label: 'Patient Chats', icon: <MessageCircle className="h-4 w-4 mr-3" />, badge: chats.length },
+    { key: 'prescriptions', label: 'Prescriptions', icon: <FileText className="h-4 w-4 mr-3" />, badge: prescriptions.length },
+    { key: 'profile', label: 'My Profile', icon: <Settings className="h-4 w-4 mr-3" />, badge: 0 },
+  ]
+
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="flex flex-col md:flex-row md:items-center justify-between mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Doctor Dashboard</h1>
-          <p className="text-gray-600">Welcome back, {currentUser?.name || 'Doctor'}</p>
-        </div>
-        <button onClick={handleLogout} className="flex items-center px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-red-600 mt-4 md:mt-0">
-          <LogOut className="h-4 w-4 mr-2" />Logout
-        </button>
-      </div>
-
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {[
-          { label: 'Total Appointments', value: stats.totalAppointments },
-          { label: "Today's Appointments", value: stats.todayAppointments },
-          { label: 'Pending Approvals', value: stats.pendingApprovals },
-          { label: 'Total Earnings', value: `Rs. ${stats.totalEarnings.toLocaleString()}` }
-        ].map((stat, i) => (
-          <div key={i} className="bg-white rounded-xl shadow-lg p-6">
-            <p className="text-sm text-gray-600">{stat.label}</p>
-            <p className="text-2xl font-bold mt-1">{stat.value}</p>
+    <div className="min-h-screen bg-slate-50">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-blue-700 to-teal-700 py-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
+          <div>
+            <h1 className="text-2xl font-bold text-white">Doctor Dashboard</h1>
+            <p className="text-blue-100 text-sm">Welcome back, {currentUser?.name || 'Doctor'}</p>
           </div>
-        ))}
+          <button onClick={handleLogout}
+            className="flex items-center px-4 py-2 bg-white/10 border border-white/20 text-white rounded-lg hover:bg-white/20 text-sm transition">
+            <LogOut className="h-4 w-4 mr-2" />Logout
+          </button>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-        {/* Sidebar */}
-        <div className="lg:col-span-1">
-          <div className="bg-white rounded-xl shadow-lg p-6">
-            <div className="flex items-center space-x-4 mb-6">
-              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center text-2xl">👨‍⚕️</div>
-              <div>
-                <h3 className="font-bold">{currentUser?.name || 'Doctor'}</h3>
-                <p className="text-red-600 text-sm">{currentUser?.specialization || 'Doctor'}</p>
-              </div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Stats */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          {[
+            { label: 'Total Appointments', value: stats.totalAppointments, color: 'bg-blue-50 text-blue-600' },
+            { label: "Today's", value: stats.todayAppointments, color: 'bg-teal-50 text-teal-600' },
+            { label: 'Pending', value: stats.pendingApprovals, color: 'bg-amber-50 text-amber-600' },
+            { label: 'Earnings', value: `Rs. ${stats.totalEarnings.toLocaleString()}`, color: 'bg-indigo-50 text-indigo-600' }
+          ].map((stat, i) => (
+            <div key={i} className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4">
+              <p className="text-xs text-slate-500 mb-1">{stat.label}</p>
+              <p className="text-xl font-bold text-slate-900">{stat.value}</p>
             </div>
-            <nav className="space-y-2">
-              {[
-                { key: 'appointments', label: 'Appointments', icon: <Calendar className="h-5 w-5 mr-3" /> },
-                { key: 'chats', label: 'Patient Chats', icon: <MessageCircle className="h-5 w-5 mr-3" /> },
-                { key: 'prescriptions', label: 'Prescriptions', icon: <FileText className="h-5 w-5 mr-3" /> },
-                { key: 'profile', label: 'Complete Profile', icon: <Settings className="h-5 w-5 mr-3" /> }
-              ].map(item => (
-                <button key={item.key} onClick={() => setActiveTab(item.key)}
-                  className={`w-full flex items-center px-4 py-3 rounded-lg transition ${activeTab === item.key ? 'bg-red-50 text-red-600' : 'hover:bg-gray-50'}`}>
-                  {item.icon}{item.label}
-                  {item.key === 'chats' && chats.length > 0 && (
-                    <span className="ml-auto bg-red-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                      {chats.length}
-                    </span>
-                  )}
-                  {item.key === 'prescriptions' && prescriptions.length > 0 && (
-                    <span className="ml-auto bg-red-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                      {prescriptions.length}
-                    </span>
-                  )}
-                </button>
-              ))}
-              <button onClick={handleLogout} className="w-full flex items-center px-4 py-3 rounded-lg hover:bg-gray-50 transition text-red-600">
-                <LogOut className="h-5 w-5 mr-3" />Logout
-              </button>
-            </nav>
-          </div>
+          ))}
         </div>
 
-        {/* Main Content */}
-        <div className="lg:col-span-3">
-          {activeTab === 'appointments' && (
-            <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-              <div className="px-6 py-4 border-b flex justify-between items-center">
-                <h2 className="text-xl font-bold">Appointments ({filteredAppointments.length})</h2>
-                <div className="flex items-center space-x-2">
-                  <Filter className="h-4 w-4 text-gray-500" />
-                  <select className="border border-gray-300 rounded-lg px-3 py-1 text-sm"
-                    value={filter} onChange={(e) => setFilter(e.target.value)}>
-                    <option value="all">All Status</option>
-                    <option value="pending">Pending</option>
-                    <option value="confirmed">Confirmed</option>
-                    <option value="cancelled">Cancelled</option>
-                  </select>
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          {/* Sidebar */}
+          <div className="lg:col-span-1">
+            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
+              <div className="flex items-center space-x-3 mb-5 pb-5 border-b border-slate-100">
+                <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-xl">👨‍⚕️</div>
+                <div>
+                  <h3 className="font-semibold text-slate-900 text-sm">{currentUser?.name || 'Doctor'}</h3>
+                  <p className="text-blue-600 text-xs">{currentUser?.specialization || 'Doctor'}</p>
                 </div>
               </div>
-              {loading ? (
-                <div className="p-8 text-center">
-                  <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-red-600 mx-auto"></div>
+              <nav className="space-y-1">
+                {navItems.map(item => (
+                  <button key={item.key} onClick={() => setActiveTab(item.key)}
+                    className={`w-full flex items-center px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                      activeTab === item.key ? 'bg-blue-600 text-white' : 'text-slate-600 hover:bg-slate-50'
+                    }`}>
+                    {item.icon}{item.label}
+                    {item.badge > 0 && (
+                      <span className={`ml-auto text-xs rounded-full w-5 h-5 flex items-center justify-center ${
+                        activeTab === item.key ? 'bg-white text-blue-600' : 'bg-blue-100 text-blue-600'
+                      }`}>{item.badge}</span>
+                    )}
+                  </button>
+                ))}
+                <button onClick={handleLogout}
+                  className="w-full flex items-center px-3 py-2.5 rounded-xl text-sm font-medium text-slate-500 hover:bg-red-50 hover:text-red-600 transition-all">
+                  <LogOut className="h-4 w-4 mr-3" />Logout
+                </button>
+              </nav>
+            </div>
+          </div>
+
+          {/* Main Content */}
+          <div className="lg:col-span-3">
+            {activeTab === 'appointments' && (
+              <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+                <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center">
+                  <h2 className="font-semibold text-slate-900">Appointments ({filteredAppointments.length})</h2>
+                  <div className="flex items-center space-x-2">
+                    <Filter className="h-4 w-4 text-slate-400" />
+                    <select className="border border-slate-200 rounded-lg px-3 py-1.5 text-xs text-slate-600 focus:outline-none"
+                      value={filter} onChange={(e) => setFilter(e.target.value)}>
+                      <option value="all">All</option>
+                      <option value="pending">Pending</option>
+                      <option value="confirmed">Confirmed</option>
+                      <option value="cancelled">Cancelled</option>
+                    </select>
+                  </div>
                 </div>
-              ) : filteredAppointments.length === 0 ? (
-                <div className="p-8 text-center text-gray-500">
-                  <Calendar className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                  <p>No appointments found.</p>
-                </div>
-              ) : (
-                <div className="divide-y">
-                  {filteredAppointments.map((appointment) => (
-                    <div key={appointment.id} className="p-6">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <h3 className="font-bold text-lg">{appointment.patient_name}</h3>
-                          <div className="flex items-center space-x-4 mt-2 text-sm text-gray-600">
-                            <span>📧 {appointment.patient_email}</span>
-                            {appointment.patient_phone && <span>📞 {appointment.patient_phone}</span>}
+                {loading ? (
+                  <div className="p-12 text-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+                  </div>
+                ) : filteredAppointments.length === 0 ? (
+                  <div className="p-12 text-center">
+                    <Calendar className="h-10 w-10 mx-auto mb-3 text-slate-200" />
+                    <p className="text-slate-400 text-sm">No appointments found.</p>
+                  </div>
+                ) : (
+                  <div className="divide-y divide-slate-50">
+                    {filteredAppointments.map(apt => (
+                      <div key={apt.id} className="p-5 hover:bg-slate-50 transition-colors">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <h3 className="font-semibold text-slate-900">{apt.patient_name}</h3>
+                            <div className="flex items-center space-x-3 mt-1 text-xs text-slate-400">
+                              <span>{apt.patient_email}</span>
+                              {apt.patient_phone && <span>{apt.patient_phone}</span>}
+                            </div>
+                            {apt.symptoms && <p className="text-slate-500 text-xs mt-1.5">Symptoms: {apt.symptoms}</p>}
                           </div>
-                          {appointment.symptoms && (
-                            <p className="text-gray-700 mt-2 text-sm"><span className="font-medium">Symptoms:</span> {appointment.symptoms}</p>
-                          )}
+                          <div className="text-right">
+                            <div className="font-bold text-slate-900">{apt.time}</div>
+                            <div className="text-slate-400 text-xs">{apt.date}</div>
+                            <div className="text-blue-600 text-xs font-medium mt-1">Rs. {apt.fee}</div>
+                            <div className="mt-2">
+                              {apt.status === 'pending' ? (
+                                <div className="flex space-x-1.5">
+                                  <button onClick={() => handleApprove(apt.id)}
+                                    className="px-3 py-1.5 bg-teal-600 text-white rounded-lg text-xs flex items-center hover:bg-teal-700 transition">
+                                    <CheckCircle className="h-3 w-3 mr-1" />Approve
+                                  </button>
+                                  <button onClick={() => handleReject(apt.id)}
+                                    className="px-3 py-1.5 bg-red-500 text-white rounded-lg text-xs flex items-center hover:bg-red-600 transition">
+                                    <XCircle className="h-3 w-3 mr-1" />Reject
+                                  </button>
+                                </div>
+                              ) : (
+                                <span className={`px-2.5 py-1 rounded-lg text-xs font-medium capitalize ${
+                                  apt.status === 'confirmed' ? 'bg-teal-50 text-teal-700 border border-teal-200' :
+                                  apt.status === 'cancelled' ? 'bg-red-50 text-red-600 border border-red-200' :
+                                  'bg-amber-50 text-amber-700 border border-amber-200'
+                                }`}>{apt.status}</span>
+                              )}
+                            </div>
+                          </div>
                         </div>
-                        <div className="text-right">
-                          <div className="text-lg font-bold">{appointment.time}</div>
-                          <div className="text-gray-600 text-sm">{appointment.date}</div>
-                          <div className="text-red-600 font-medium text-sm mt-1">Rs. {appointment.fee}</div>
-                          <div className="mt-2">
-                            {appointment.status === 'pending' ? (
-                              <div className="flex space-x-2">
-                                <button onClick={() => handleApprove(appointment.id)}
-                                  className="px-3 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm flex items-center">
-                                  <CheckCircle className="h-4 w-4 mr-1" />Approve
-                                </button>
-                                <button onClick={() => handleReject(appointment.id)}
-                                  className="px-3 py-1 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm flex items-center">
-                                  <XCircle className="h-4 w-4 mr-1" />Reject
-                                </button>
-                              </div>
-                            ) : (
-                              <span className={`px-3 py-1 rounded-full text-sm capitalize ${
-                                appointment.status === 'confirmed' ? 'bg-green-100 text-green-800' :
-                                appointment.status === 'cancelled' ? 'bg-red-100 text-red-800' :
-                                'bg-yellow-100 text-yellow-800'
-                              }`}>{appointment.status}</span>
-                            )}
-                          </div>
+                        <div className="mt-3 flex justify-end">
+                          <button onClick={() => { setSelectedAppointment(apt); setShowPrescriptionModal(true) }}
+                            className="px-4 py-1.5 bg-blue-50 text-blue-600 border border-blue-200 rounded-lg text-xs font-medium flex items-center hover:bg-blue-100 transition">
+                            <FileText className="h-3 w-3 mr-1.5" />Write Prescription
+                          </button>
                         </div>
                       </div>
-                      {/* Write Prescription Button */}
-                      <div className="mt-4 flex justify-end">
-                        <button onClick={() => {
-                          setSelectedAppointment(appointment)
-                          setShowPrescriptionModal(true)
-                        }}
-                          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm flex items-center">
-                          <FileText className="h-4 w-4 mr-2" />Write Prescription
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {activeTab === 'chats' && (
+              <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+                <div className="px-6 py-4 border-b border-slate-100">
+                  <h2 className="font-semibold text-slate-900">Patient Chats ({chats.length})</h2>
+                </div>
+                {chats.length === 0 ? (
+                  <div className="p-12 text-center">
+                    <MessageCircle className="h-10 w-10 mx-auto mb-3 text-slate-200" />
+                    <p className="text-slate-400 text-sm">No patient chats yet.</p>
+                  </div>
+                ) : (
+                  <div className="divide-y divide-slate-50">
+                    {chats.map(chat => (
+                      <div key={chat.id} className="p-4 flex items-center justify-between hover:bg-slate-50">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center">
+                            <span className="text-blue-600 font-bold text-sm">{chat.patient_name?.charAt(0)?.toUpperCase()}</span>
+                          </div>
+                          <div>
+                            <p className="font-medium text-slate-900 text-sm">{chat.patient_name}</p>
+                            <p className="text-slate-400 text-xs">Tap to open chat</p>
+                          </div>
+                        </div>
+                        <button onClick={() => setActiveChat(chat)}
+                          className="px-4 py-2 bg-blue-600 text-white rounded-xl text-xs font-medium flex items-center hover:bg-blue-700 transition">
+                          <MessageCircle className="h-3 w-3 mr-1.5" />Open
                         </button>
                       </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {activeTab === 'prescriptions' && (
+              <div className="space-y-4">
+                <div className="bg-white rounded-2xl border border-slate-100 shadow-sm px-6 py-4 flex items-center justify-between">
+                  <h2 className="font-semibold text-slate-900">Prescriptions</h2>
+                  <span className="text-xs text-slate-400">{prescriptions.length} total</span>
+                </div>
+                {prescriptions.length === 0 ? (
+                  <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-12 text-center">
+                    <FileText className="h-10 w-10 mx-auto mb-3 text-slate-200" />
+                    <p className="text-slate-400 text-sm">No prescriptions yet.</p>
+                    <p className="text-slate-300 text-xs mt-1">Write a prescription from the Appointments tab.</p>
+                  </div>
+                ) : prescriptions.map(p => <PrescriptionCard key={p.id} prescription={p} />)}
+              </div>
+            )}
+
+            {activeTab === 'profile' && (
+              <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+                <h2 className="font-semibold text-slate-900 mb-1">Complete Your Profile</h2>
+                <p className="text-slate-400 text-xs mb-5">Fill in your details so patients can find and book you.</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {[
+                    { label: 'Full Name', key: 'name', type: 'text' },
+                    { label: 'Specialization', key: 'specialization', type: 'text' },
+                    { label: 'Experience (years)', key: 'experience', type: 'number' },
+                    { label: 'Consultation Fee (Rs.)', key: 'fee', type: 'number' },
+                    { label: 'Phone', key: 'phone', type: 'text' },
+                    { label: 'Hospital', key: 'hospital', type: 'text' },
+                    { label: 'Clinic', key: 'clinic', type: 'text' },
+                    { label: 'Location', key: 'location', type: 'text' },
+                    { label: 'Available Time', key: 'available_time', type: 'text' },
+                    { label: 'Time Slots (comma separated)', key: 'slots', type: 'text', placeholder: '09:00 AM, 10:30 AM' },
+                  ].map(field => (
+                    <div key={field.key}>
+                      <label className="block text-xs font-medium text-slate-600 mb-1.5">{field.label}</label>
+                      <input type={field.type} placeholder={field.placeholder || ''}
+                        value={profileData[field.key]}
+                        onChange={(e) => setProfileData({ ...profileData, [field.key]: e.target.value })}
+                        className={inputClass} />
                     </div>
                   ))}
                 </div>
-              )}
-            </div>
-          )}
-
-          {activeTab === 'chats' && (
-            <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-              <div className="px-6 py-4 border-b">
-                <h2 className="text-xl font-bold">Patient Chats ({chats.length})</h2>
+                <div className="mt-4">
+                  <label className="block text-xs font-medium text-slate-600 mb-1.5">Description</label>
+                  <textarea value={profileData.description}
+                    onChange={(e) => setProfileData({ ...profileData, description: e.target.value })}
+                    className={`${inputClass} h-24 resize-none`} />
+                </div>
+                <button onClick={handleSaveProfile} disabled={saving}
+                  className="mt-5 bg-blue-600 text-white px-8 py-2.5 rounded-xl font-medium text-sm hover:bg-blue-700 transition disabled:opacity-50">
+                  {saving ? 'Saving...' : 'Save Profile'}
+                </button>
               </div>
-              {chats.length === 0 ? (
-                <div className="p-8 text-center text-gray-500">
-                  <MessageCircle className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                  <p>No patient chats yet.</p>
-                </div>
-              ) : (
-                <div className="divide-y">
-                  {chats.map(chat => (
-                    <div key={chat.id} className="p-4 flex items-center justify-between hover:bg-gray-50">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
-                          <span className="text-red-600 font-bold text-lg">
-                            {chat.patient_name?.charAt(0)?.toUpperCase()}
-                          </span>
-                        </div>
-                        <div>
-                          <p className="font-semibold">{chat.patient_name}</p>
-                          <p className="text-sm text-gray-500">Tap to open chat</p>
-                        </div>
-                      </div>
-                      <button onClick={() => setActiveChat(chat)}
-                        className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm flex items-center">
-                        <MessageCircle className="h-4 w-4 mr-2" />Open Chat
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-
-          {activeTab === 'prescriptions' && (
-            <div className="space-y-4">
-              <div className="bg-white rounded-xl shadow-lg px-6 py-4 border-b">
-                <h2 className="text-xl font-bold">Prescriptions ({prescriptions.length})</h2>
-              </div>
-              {prescriptions.length === 0 ? (
-                <div className="bg-white rounded-xl shadow-lg p-8 text-center text-gray-500">
-                  <FileText className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                  <p>No prescriptions yet.</p>
-                  <p className="text-sm mt-1">Write a prescription from the Appointments tab.</p>
-                </div>
-              ) : (
-                prescriptions.map(prescription => (
-                  <PrescriptionCard key={prescription.id} prescription={prescription} />
-                ))
-              )}
-            </div>
-          )}
-
-          {activeTab === 'profile' && (
-            <div className="bg-white rounded-xl shadow-lg p-8">
-              <h2 className="text-xl font-bold mb-2">Complete Your Profile</h2>
-              <p className="text-gray-600 text-sm mb-6">Fill in your details so patients can find and book you.</p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-                  <input type="text" value={profileData.name}
-                    onChange={(e) => setProfileData({ ...profileData, name: e.target.value })}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-red-500" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Specialization</label>
-                  <input type="text" value={profileData.specialization}
-                    onChange={(e) => setProfileData({ ...profileData, specialization: e.target.value })}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-red-500" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Experience (years)</label>
-                  <input type="number" value={profileData.experience}
-                    onChange={(e) => setProfileData({ ...profileData, experience: e.target.value })}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-red-500" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Consultation Fee (Rs.)</label>
-                  <input type="number" value={profileData.fee}
-                    onChange={(e) => setProfileData({ ...profileData, fee: e.target.value })}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-red-500" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
-                  <input type="text" value={profileData.phone}
-                    onChange={(e) => setProfileData({ ...profileData, phone: e.target.value })}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-red-500" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Hospital</label>
-                  <input type="text" value={profileData.hospital}
-                    onChange={(e) => setProfileData({ ...profileData, hospital: e.target.value })}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-red-500" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Clinic</label>
-                  <input type="text" value={profileData.clinic}
-                    onChange={(e) => setProfileData({ ...profileData, clinic: e.target.value })}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-red-500" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
-                  <input type="text" value={profileData.location}
-                    onChange={(e) => setProfileData({ ...profileData, location: e.target.value })}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-red-500" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Available Time</label>
-                  <input type="text" value={profileData.available_time}
-                    onChange={(e) => setProfileData({ ...profileData, available_time: e.target.value })}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-red-500" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Time Slots (comma separated)</label>
-                  <input type="text" placeholder="09:00 AM, 10:30 AM, 12:00 PM"
-                    value={profileData.slots}
-                    onChange={(e) => setProfileData({ ...profileData, slots: e.target.value })}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-red-500" />
-                </div>
-              </div>
-              <div className="mt-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                <textarea value={profileData.description}
-                  onChange={(e) => setProfileData({ ...profileData, description: e.target.value })}
-                  className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-red-500 h-24" />
-              </div>
-              <button onClick={handleSaveProfile} disabled={saving}
-                className="mt-6 bg-red-600 text-white px-8 py-3 rounded-lg hover:bg-red-700 font-medium disabled:opacity-50">
-                {saving ? 'Saving...' : 'Save Profile'}
-              </button>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
 
-      {activeChat && (
-        <ChatWindow chat={activeChat} currentUser={currentUser} onClose={() => setActiveChat(null)} />
-      )}
-
+      {activeChat && <ChatWindow chat={activeChat} currentUser={currentUser} onClose={() => setActiveChat(null)} />}
       {showPrescriptionModal && selectedAppointment && (
-        <PrescriptionModal
-          appointment={selectedAppointment}
-          currentUser={currentUser}
-          onClose={() => {
-            setShowPrescriptionModal(false)
-            setSelectedAppointment(null)
-          }}
-          onCreated={(newPrescription) => {
-            setPrescriptions(prev => [newPrescription, ...prev])
-          }}
-        />
+        <PrescriptionModal appointment={selectedAppointment} currentUser={currentUser}
+          onClose={() => { setShowPrescriptionModal(false); setSelectedAppointment(null) }}
+          onCreated={(p) => setPrescriptions(prev => [p, ...prev])} />
       )}
     </div>
   )

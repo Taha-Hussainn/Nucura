@@ -15,16 +15,10 @@ const AdminDashboard = () => {
 
   useEffect(() => {
     getAllDoctors().then(data => setDoctors(data || []))
-    getAllAppointments().then(result => {
-      if (result.success) setAppointments(result.data)
-      setLoading(false)
-    })
+    getAllAppointments().then(result => { if (result.success) setAppointments(result.data); setLoading(false) })
   }, [])
 
-  const handleLogout = async () => {
-    await logout()
-    navigate('/login')
-  }
+  const handleLogout = async () => { await logout(); navigate('/login') }
 
   const handleStatusChange = async (id, status) => {
     const result = await updateAppointmentStatus(id, status)
@@ -32,243 +26,210 @@ const AdminDashboard = () => {
   }
 
   const handleDeleteDoctor = async (id) => {
-    if (!window.confirm('Remove this doctor from the platform?')) return
+    if (!window.confirm('Remove this doctor?')) return
     const result = await deleteDoctor(id)
-    if (result.success) {
-      setDoctors(prev => prev.filter(d => d.id !== id))
-    } else {
-      alert('Failed to delete: ' + result.error)
-    }
+    if (result.success) setDoctors(prev => prev.filter(d => d.id !== id))
+    else alert('Failed: ' + result.error)
   }
 
   const stats = {
     totalDoctors: doctors.length,
     totalAppointments: appointments.length,
     pending: appointments.filter(a => a.status === 'pending').length,
-    totalRevenue: appointments
-      .filter(a => a.status === 'confirmed')
-      .reduce((sum, a) => sum + (a.fee || 0), 0)
+    totalRevenue: appointments.filter(a => a.status === 'confirmed').reduce((sum, a) => sum + (a.fee || 0), 0)
   }
 
   const statusColor = (status) => {
-    if (status === 'confirmed') return 'bg-green-100 text-green-800'
-    if (status === 'pending') return 'bg-yellow-100 text-yellow-800'
-    if (status === 'cancelled') return 'bg-red-100 text-red-800'
-    return 'bg-gray-100 text-gray-800'
+    if (status === 'confirmed') return 'bg-teal-50 text-teal-700 border border-teal-200'
+    if (status === 'pending') return 'bg-amber-50 text-amber-700 border border-amber-200'
+    if (status === 'cancelled') return 'bg-red-50 text-red-600 border border-red-200'
+    return 'bg-slate-100 text-slate-600'
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="min-h-screen bg-slate-50">
       {/* Header */}
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-          <p className="text-gray-600">Manage Nucura platform</p>
-        </div>
-        <div className="flex items-center space-x-3">
-          <div className="flex items-center px-4 py-2 bg-red-50 text-red-700 rounded-lg">
-            <Shield className="h-5 w-5 mr-2" />Administrator
+      <div className="bg-gradient-to-r from-blue-700 to-teal-700 py-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
+          <div>
+            <h1 className="text-2xl font-bold text-white">Admin Dashboard</h1>
+            <p className="text-blue-100 text-sm">Manage Nucura platform</p>
           </div>
-          <button onClick={handleLogout}
-            className="flex items-center px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-red-600">
-            <LogOut className="h-4 w-4 mr-2" />Logout
-          </button>
-        </div>
-      </div>
-
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div className="bg-white rounded-xl shadow-lg p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600">Total Doctors</p>
-              <p className="text-2xl font-bold">{stats.totalDoctors}</p>
+          <div className="flex items-center space-x-3">
+            <div className="flex items-center px-3 py-1.5 bg-white/20 text-white rounded-lg text-sm">
+              <Shield className="h-4 w-4 mr-1.5" />Administrator
             </div>
-            <div className="p-3 bg-red-100 rounded-lg">
-              <Stethoscope className="h-6 w-6 text-red-600" />
-            </div>
-          </div>
-        </div>
-        <div className="bg-white rounded-xl shadow-lg p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600">Total Appointments</p>
-              <p className="text-2xl font-bold">{stats.totalAppointments}</p>
-            </div>
-            <div className="p-3 bg-green-100 rounded-lg">
-              <Calendar className="h-6 w-6 text-green-600" />
-            </div>
-          </div>
-        </div>
-        <div className="bg-white rounded-xl shadow-lg p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600">Pending</p>
-              <p className="text-2xl font-bold">{stats.pending}</p>
-            </div>
-            <div className="p-3 bg-yellow-100 rounded-lg">
-              <Users className="h-6 w-6 text-yellow-600" />
-            </div>
-          </div>
-        </div>
-        <div className="bg-white rounded-xl shadow-lg p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600">Revenue (Confirmed)</p>
-              <p className="text-2xl font-bold">Rs. {stats.totalRevenue.toLocaleString()}</p>
-            </div>
-            <div className="p-3 bg-purple-100 rounded-lg">
-              <DollarSign className="h-6 w-6 text-purple-600" />
-            </div>
+            <button onClick={handleLogout}
+              className="flex items-center px-4 py-2 bg-white/10 border border-white/20 text-white rounded-lg hover:bg-white/20 text-sm transition">
+              <LogOut className="h-4 w-4 mr-2" />Logout
+            </button>
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-        {/* Sidebar */}
-        <div className="lg:col-span-1">
-          <div className="bg-white rounded-xl shadow-lg p-6">
-            <div className="flex items-center space-x-4 mb-6">
-              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center">
-                <Shield className="h-8 w-8 text-red-600" />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Stats */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          {[
+            { label: 'Total Doctors', value: stats.totalDoctors, icon: <Stethoscope className="h-5 w-5" />, color: 'bg-blue-50 text-blue-600' },
+            { label: 'Total Appointments', value: stats.totalAppointments, icon: <Calendar className="h-5 w-5" />, color: 'bg-teal-50 text-teal-600' },
+            { label: 'Pending', value: stats.pending, icon: <Users className="h-5 w-5" />, color: 'bg-amber-50 text-amber-600' },
+            { label: 'Revenue', value: `Rs. ${stats.totalRevenue.toLocaleString()}`, icon: <DollarSign className="h-5 w-5" />, color: 'bg-indigo-50 text-indigo-600' }
+          ].map((stat, i) => (
+            <div key={i} className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
+              <div className={`inline-flex items-center justify-center w-9 h-9 ${stat.color} rounded-xl mb-3`}>
+                {stat.icon}
               </div>
-              <div>
-                <h3 className="font-bold">Admin</h3>
-                <p className="text-gray-600 text-sm">Administrator</p>
-              </div>
+              <p className="text-xs text-slate-500 mb-1">{stat.label}</p>
+              <p className="text-xl font-bold text-slate-900">{stat.value}</p>
             </div>
-            <nav className="space-y-2">
-              {[
-                { key: 'doctors', label: 'Manage Doctors', icon: <Stethoscope className="h-5 w-5 mr-3" /> },
-                { key: 'appointments', label: 'All Appointments', icon: <Calendar className="h-5 w-5 mr-3" /> },
-              ].map(item => (
-                <button key={item.key} onClick={() => setActiveTab(item.key)}
-                  className={`w-full flex items-center px-4 py-3 rounded-lg transition ${activeTab === item.key ? 'bg-red-50 text-red-600' : 'hover:bg-gray-50'}`}>
-                  {item.icon}{item.label}
+          ))}
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          {/* Sidebar */}
+          <div className="lg:col-span-1">
+            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
+              <div className="flex items-center space-x-3 mb-5 pb-5 border-b border-slate-100">
+                <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
+                  <Shield className="h-5 w-5 text-blue-600" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-slate-900 text-sm">Admin</h3>
+                  <p className="text-slate-400 text-xs">Administrator</p>
+                </div>
+              </div>
+              <nav className="space-y-1">
+                {[
+                  { key: 'doctors', label: 'Manage Doctors', icon: <Stethoscope className="h-4 w-4 mr-3" /> },
+                  { key: 'appointments', label: 'All Appointments', icon: <Calendar className="h-4 w-4 mr-3" /> },
+                ].map(item => (
+                  <button key={item.key} onClick={() => setActiveTab(item.key)}
+                    className={`w-full flex items-center px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                      activeTab === item.key ? 'bg-blue-600 text-white' : 'text-slate-600 hover:bg-slate-50'
+                    }`}>
+                    {item.icon}{item.label}
+                  </button>
+                ))}
+                <button onClick={handleLogout}
+                  className="w-full flex items-center px-3 py-2.5 rounded-xl text-sm font-medium text-slate-500 hover:bg-red-50 hover:text-red-600 transition-all">
+                  <LogOut className="h-4 w-4 mr-3" />Logout
                 </button>
-              ))}
-              <button onClick={handleLogout}
-                className="w-full flex items-center px-4 py-3 rounded-lg hover:bg-gray-50 transition text-red-600">
-                <LogOut className="h-5 w-5 mr-3" />Logout
-              </button>
-            </nav>
-          </div>
-        </div>
-
-        {/* Main Content */}
-        <div className="lg:col-span-3">
-          {activeTab === 'doctors' && (
-            <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-              <div className="px-6 py-4 border-b">
-                <h2 className="text-xl font-bold">Doctors ({doctors.length})</h2>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Doctor</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Specialization</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Experience</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fee</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200">
-                    {doctors.map((doctor) => (
-                      <tr key={doctor.id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4">
-                          <div className="font-medium text-gray-900">{doctor.name}</div>
-                          <div className="text-sm text-gray-500">{doctor.hospital}</div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <span className="text-red-600 font-medium">{doctor.specialization}</span>
-                        </td>
-                        <td className="px-6 py-4">{doctor.experience} years</td>
-                        <td className="px-6 py-4">Rs. {doctor.fee}</td>
-                        <td className="px-6 py-4">
-                          <button
-                            onClick={() => handleDeleteDoctor(doctor.id)}
-                            className="px-3 py-1 bg-red-600 text-white rounded text-xs hover:bg-red-700 flex items-center">
-                            <Trash2 className="h-3 w-3 mr-1" />Remove
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              </nav>
             </div>
-          )}
+          </div>
 
-          {activeTab === 'appointments' && (
-            <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-              <div className="px-6 py-4 border-b">
-                <h2 className="text-xl font-bold">All Appointments ({appointments.length})</h2>
-              </div>
-              {loading ? (
-                <div className="p-8 text-center">
-                  <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-red-600 mx-auto"></div>
+          {/* Main */}
+          <div className="lg:col-span-3">
+            {activeTab === 'doctors' && (
+              <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+                <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+                  <h2 className="font-semibold text-slate-900">Doctors</h2>
+                  <span className="text-xs text-slate-400">{doctors.length} total</span>
                 </div>
-              ) : appointments.length === 0 ? (
-                <div className="p-8 text-center text-gray-500">
-                  <Calendar className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                  <p>No appointments yet.</p>
-                </div>
-              ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full">
-                    <thead className="bg-gray-50">
+                    <thead className="bg-slate-50">
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Patient</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Doctor</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date & Time</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fee</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                        {['Doctor', 'Specialization', 'Experience', 'Fee', 'Action'].map(h => (
+                          <th key={h} className="px-5 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">{h}</th>
+                        ))}
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-200">
-                      {appointments.map((apt) => (
-                        <tr key={apt.id} className="hover:bg-gray-50">
-                          <td className="px-6 py-4">
-                            <div className="font-medium">{apt.patient_name}</div>
-                            <div className="text-sm text-gray-500">{apt.patient_email}</div>
+                    <tbody className="divide-y divide-slate-50">
+                      {doctors.map(doctor => (
+                        <tr key={doctor.id} className="hover:bg-slate-50 transition-colors">
+                          <td className="px-5 py-4">
+                            <div className="font-medium text-slate-900 text-sm">{doctor.name}</div>
+                            <div className="text-xs text-slate-400">{doctor.hospital}</div>
                           </td>
-                          <td className="px-6 py-4">{apt.doctor_name}</td>
-                          <td className="px-6 py-4">
-                            <div>{apt.date}</div>
-                            <div className="text-sm text-gray-500">{apt.time}</div>
+                          <td className="px-5 py-4">
+                            <span className="text-blue-600 font-medium text-sm">{doctor.specialization}</span>
                           </td>
-                          <td className="px-6 py-4">Rs. {apt.fee}</td>
-                          <td className="px-6 py-4">
-                            <span className={`px-3 py-1 rounded-full text-sm font-medium capitalize ${statusColor(apt.status)}`}>
-                              {apt.status}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4">
-                            <div className="flex space-x-2">
-                              {apt.status === 'pending' && (
-                                <button onClick={() => handleStatusChange(apt.id, 'confirmed')}
-                                  className="px-3 py-1 bg-green-600 text-white rounded text-xs hover:bg-green-700">
-                                  Confirm
-                                </button>
-                              )}
-                              {apt.status !== 'cancelled' && (
-                                <button onClick={() => handleStatusChange(apt.id, 'cancelled')}
-                                  className="px-3 py-1 bg-red-600 text-white rounded text-xs hover:bg-red-700">
-                                  Cancel
-                                </button>
-                              )}
-                            </div>
+                          <td className="px-5 py-4 text-slate-600 text-sm">{doctor.experience} yrs</td>
+                          <td className="px-5 py-4 text-slate-600 text-sm">Rs. {doctor.fee}</td>
+                          <td className="px-5 py-4">
+                            <button onClick={() => handleDeleteDoctor(doctor.id)}
+                              className="px-3 py-1.5 bg-red-50 text-red-600 border border-red-200 rounded-lg text-xs font-medium hover:bg-red-100 flex items-center transition-colors">
+                              <Trash2 className="h-3 w-3 mr-1" />Remove
+                            </button>
                           </td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
                 </div>
-              )}
-            </div>
-          )}
+              </div>
+            )}
+
+            {activeTab === 'appointments' && (
+              <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+                <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+                  <h2 className="font-semibold text-slate-900">All Appointments</h2>
+                  <span className="text-xs text-slate-400">{appointments.length} total</span>
+                </div>
+                {loading ? (
+                  <div className="p-12 text-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+                  </div>
+                ) : appointments.length === 0 ? (
+                  <div className="p-12 text-center">
+                    <Calendar className="h-10 w-10 mx-auto mb-3 text-slate-200" />
+                    <p className="text-slate-400 text-sm">No appointments yet.</p>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead className="bg-slate-50">
+                        <tr>
+                          {['Patient', 'Doctor', 'Date & Time', 'Fee', 'Status', 'Actions'].map(h => (
+                            <th key={h} className="px-5 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">{h}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-50">
+                        {appointments.map(apt => (
+                          <tr key={apt.id} className="hover:bg-slate-50 transition-colors">
+                            <td className="px-5 py-4">
+                              <div className="font-medium text-slate-900 text-sm">{apt.patient_name}</div>
+                              <div className="text-xs text-slate-400">{apt.patient_email}</div>
+                            </td>
+                            <td className="px-5 py-4 text-slate-600 text-sm">{apt.doctor_name}</td>
+                            <td className="px-5 py-4">
+                              <div className="text-slate-800 text-sm">{apt.date}</div>
+                              <div className="text-slate-400 text-xs">{apt.time}</div>
+                            </td>
+                            <td className="px-5 py-4 text-slate-600 text-sm">Rs. {apt.fee}</td>
+                            <td className="px-5 py-4">
+                              <span className={`px-2.5 py-1 rounded-lg text-xs font-medium capitalize ${statusColor(apt.status)}`}>
+                                {apt.status}
+                              </span>
+                            </td>
+                            <td className="px-5 py-4">
+                              <div className="flex space-x-2">
+                                {apt.status === 'pending' && (
+                                  <button onClick={() => handleStatusChange(apt.id, 'confirmed')}
+                                    className="px-3 py-1.5 bg-teal-50 text-teal-700 border border-teal-200 rounded-lg text-xs font-medium hover:bg-teal-100 transition">
+                                    Confirm
+                                  </button>
+                                )}
+                                {apt.status !== 'cancelled' && (
+                                  <button onClick={() => handleStatusChange(apt.id, 'cancelled')}
+                                    className="px-3 py-1.5 bg-red-50 text-red-600 border border-red-200 rounded-lg text-xs font-medium hover:bg-red-100 transition">
+                                    Cancel
+                                  </button>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
