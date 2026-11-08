@@ -10,6 +10,8 @@ import ChatWindow from '../components/ChatWindow'
 import { getPrescriptionsByDoctor } from '../api/prescriptions'
 import PrescriptionModal from '../components/PrescriptionModal'
 import PrescriptionCard from '../components/PrescriptionCard'
+import Reveal from '../components/Reveal'
+import CountUp from '../components/CountUp'
 
 const DoctorDashboard = () => {
   const [activeTab, setActiveTab] = useState('appointments')
@@ -98,42 +100,44 @@ const DoctorDashboard = () => {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-blue-700 to-teal-700 py-6">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
-          <div>
+      <div className="relative overflow-hidden bg-gradient-to-r from-blue-700 via-teal-600 to-blue-700 animate-gradient py-8">
+        <div className="absolute -top-16 -right-10 w-64 h-64 bg-white/10 rounded-full blur-3xl animate-pulse" />
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
+          <div className="animate-slide-left">
             <h1 className="text-2xl font-bold text-white">Doctor Dashboard</h1>
-            <p className="text-blue-100 text-sm">Welcome back, {currentUser?.name || 'Doctor'}</p>
+            <p className="text-blue-100 text-sm mt-1">Welcome back, {currentUser?.name || 'Doctor'}</p>
           </div>
           <button onClick={handleLogout}
-            className="flex items-center px-4 py-2 bg-white/10 border border-white/20 text-white rounded-lg hover:bg-white/20 text-sm transition">
+            className="animate-slide-right flex items-center px-4 py-2 bg-white/10 border border-white/20 text-white rounded-lg hover:bg-white/20 text-sm transition">
             <LogOut className="h-4 w-4 mr-2" />Logout
           </button>
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 -mt-14 relative z-10">
           {[
-            { label: 'Total Appointments', value: stats.totalAppointments, color: 'bg-blue-50 text-blue-600' },
-            { label: "Today's", value: stats.todayAppointments, color: 'bg-teal-50 text-teal-600' },
-            { label: 'Pending', value: stats.pendingApprovals, color: 'bg-amber-50 text-amber-600' },
-            { label: 'Earnings', value: `Rs. ${stats.totalEarnings.toLocaleString()}`, color: 'bg-indigo-50 text-indigo-600' }
-          ].map((stat, i) => (
-            <div key={i} className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4">
-              <p className="text-xs text-slate-500 mb-1">{stat.label}</p>
-              <p className="text-xl font-bold text-slate-900">{stat.value}</p>
-            </div>
+            { label: 'Total Appointments', node: <CountUp value={stats.totalAppointments} /> },
+            { label: "Today's", node: <CountUp value={stats.todayAppointments} /> },
+            { label: 'Pending', node: <CountUp value={stats.pendingApprovals} /> },
+            { label: 'Earnings', node: <CountUp value={stats.totalEarnings} prefix="Rs. " /> }
+          ].map((s, i) => (
+            <Reveal key={s.label} delay={i * 100} variant="scale">
+              <div className="bg-white rounded-2xl border border-slate-100 shadow-lg shadow-blue-900/5 p-5 card-lift">
+                <p className="text-xs text-slate-500 mb-1">{s.label}</p>
+                <p className="text-2xl font-bold text-slate-900">{s.node}</p>
+              </div>
+            </Reveal>
           ))}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Sidebar */}
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-1 animate-slide-left">
             <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
               <div className="flex items-center space-x-3 mb-5 pb-5 border-b border-slate-100">
-                <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-xl">👨‍⚕️</div>
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-teal-500 rounded-xl flex items-center justify-center">
+                  <span className="text-white font-bold text-lg">{currentUser?.name?.charAt(0)?.toUpperCase() || 'D'}</span>
+                </div>
                 <div>
                   <h3 className="font-semibold text-slate-900 text-sm">{currentUser?.name || 'Doctor'}</h3>
                   <p className="text-blue-600 text-xs">{currentUser?.specialization || 'Doctor'}</p>
@@ -142,8 +146,8 @@ const DoctorDashboard = () => {
               <nav className="space-y-1">
                 {navItems.map(item => (
                   <button key={item.key} onClick={() => setActiveTab(item.key)}
-                    className={`w-full flex items-center px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                      activeTab === item.key ? 'bg-blue-600 text-white' : 'text-slate-600 hover:bg-slate-50'
+                    className={`w-full flex items-center px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
+                      activeTab === item.key ? 'bg-blue-600 text-white shadow-md shadow-blue-200' : 'text-slate-600 hover:bg-slate-50 hover:translate-x-1'
                     }`}>
                     {item.icon}{item.label}
                     {item.badge > 0 && (
@@ -161,8 +165,7 @@ const DoctorDashboard = () => {
             </div>
           </div>
 
-          {/* Main Content */}
-          <div className="lg:col-span-3">
+          <div key={activeTab} className="lg:col-span-3 animate-fade-up">
             {activeTab === 'appointments' && (
               <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
                 <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center">
@@ -179,18 +182,17 @@ const DoctorDashboard = () => {
                   </div>
                 </div>
                 {loading ? (
-                  <div className="p-12 text-center">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-                  </div>
+                  <div className="p-6 space-y-4">{[...Array(3)].map((_, i) => <div key={i} className="h-20 rounded-xl skeleton" />)}</div>
                 ) : filteredAppointments.length === 0 ? (
                   <div className="p-12 text-center">
-                    <Calendar className="h-10 w-10 mx-auto mb-3 text-slate-200" />
+                    <Calendar className="h-10 w-10 mx-auto mb-3 text-slate-200 animate-floaty" />
                     <p className="text-slate-400 text-sm">No appointments found.</p>
                   </div>
                 ) : (
                   <div className="divide-y divide-slate-50">
-                    {filteredAppointments.map(apt => (
-                      <div key={apt.id} className="p-5 hover:bg-slate-50 transition-colors">
+                    {filteredAppointments.map((apt, i) => (
+                      <div key={apt.id} style={{ animationDelay: `${Math.min(i, 6) * 80}ms` }}
+                        className="animate-fade-up p-5 hover:bg-slate-50 transition-colors">
                         <div className="flex justify-between items-start">
                           <div>
                             <h3 className="font-semibold text-slate-900">{apt.patient_name}</h3>
@@ -208,11 +210,11 @@ const DoctorDashboard = () => {
                               {apt.status === 'pending' ? (
                                 <div className="flex space-x-1.5">
                                   <button onClick={() => handleApprove(apt.id)}
-                                    className="px-3 py-1.5 bg-teal-600 text-white rounded-lg text-xs flex items-center hover:bg-teal-700 transition">
+                                    className="px-3 py-1.5 bg-teal-600 text-white rounded-lg text-xs flex items-center hover:bg-teal-700 active:scale-95 transition">
                                     <CheckCircle className="h-3 w-3 mr-1" />Approve
                                   </button>
                                   <button onClick={() => handleReject(apt.id)}
-                                    className="px-3 py-1.5 bg-red-500 text-white rounded-lg text-xs flex items-center hover:bg-red-600 transition">
+                                    className="px-3 py-1.5 bg-red-500 text-white rounded-lg text-xs flex items-center hover:bg-red-600 active:scale-95 transition">
                                     <XCircle className="h-3 w-3 mr-1" />Reject
                                   </button>
                                 </div>
@@ -228,7 +230,7 @@ const DoctorDashboard = () => {
                         </div>
                         <div className="mt-3 flex justify-end">
                           <button onClick={() => { setSelectedAppointment(apt); setShowPrescriptionModal(true) }}
-                            className="px-4 py-1.5 bg-blue-50 text-blue-600 border border-blue-200 rounded-lg text-xs font-medium flex items-center hover:bg-blue-100 transition">
+                            className="px-4 py-1.5 bg-blue-50 text-blue-600 border border-blue-200 rounded-lg text-xs font-medium flex items-center hover:bg-blue-100 active:scale-95 transition">
                             <FileText className="h-3 w-3 mr-1.5" />Write Prescription
                           </button>
                         </div>
@@ -241,18 +243,17 @@ const DoctorDashboard = () => {
 
             {activeTab === 'chats' && (
               <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-                <div className="px-6 py-4 border-b border-slate-100">
-                  <h2 className="font-semibold text-slate-900">Patient Chats ({chats.length})</h2>
-                </div>
+                <div className="px-6 py-4 border-b border-slate-100"><h2 className="font-semibold text-slate-900">Patient Chats ({chats.length})</h2></div>
                 {chats.length === 0 ? (
                   <div className="p-12 text-center">
-                    <MessageCircle className="h-10 w-10 mx-auto mb-3 text-slate-200" />
+                    <MessageCircle className="h-10 w-10 mx-auto mb-3 text-slate-200 animate-floaty" />
                     <p className="text-slate-400 text-sm">No patient chats yet.</p>
                   </div>
                 ) : (
                   <div className="divide-y divide-slate-50">
-                    {chats.map(chat => (
-                      <div key={chat.id} className="p-4 flex items-center justify-between hover:bg-slate-50">
+                    {chats.map((chat, i) => (
+                      <div key={chat.id} style={{ animationDelay: `${Math.min(i, 6) * 80}ms` }}
+                        className="animate-fade-up p-4 flex items-center justify-between hover:bg-slate-50 transition-colors">
                         <div className="flex items-center space-x-3">
                           <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center">
                             <span className="text-blue-600 font-bold text-sm">{chat.patient_name?.charAt(0)?.toUpperCase()}</span>
@@ -263,7 +264,7 @@ const DoctorDashboard = () => {
                           </div>
                         </div>
                         <button onClick={() => setActiveChat(chat)}
-                          className="px-4 py-2 bg-blue-600 text-white rounded-xl text-xs font-medium flex items-center hover:bg-blue-700 transition">
+                          className="px-4 py-2 bg-blue-600 text-white rounded-xl text-xs font-medium flex items-center hover:bg-blue-700 active:scale-95 transition">
                           <MessageCircle className="h-3 w-3 mr-1.5" />Open
                         </button>
                       </div>
@@ -281,11 +282,15 @@ const DoctorDashboard = () => {
                 </div>
                 {prescriptions.length === 0 ? (
                   <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-12 text-center">
-                    <FileText className="h-10 w-10 mx-auto mb-3 text-slate-200" />
+                    <FileText className="h-10 w-10 mx-auto mb-3 text-slate-200 animate-floaty" />
                     <p className="text-slate-400 text-sm">No prescriptions yet.</p>
                     <p className="text-slate-300 text-xs mt-1">Write a prescription from the Appointments tab.</p>
                   </div>
-                ) : prescriptions.map(p => <PrescriptionCard key={p.id} prescription={p} />)}
+                ) : prescriptions.map((p, i) => (
+                  <div key={p.id} className="animate-fade-up" style={{ animationDelay: `${Math.min(i, 5) * 100}ms` }}>
+                    <PrescriptionCard prescription={p} />
+                  </div>
+                ))}
               </div>
             )}
 
@@ -305,8 +310,8 @@ const DoctorDashboard = () => {
                     { label: 'Location', key: 'location', type: 'text' },
                     { label: 'Available Time', key: 'available_time', type: 'text' },
                     { label: 'Time Slots (comma separated)', key: 'slots', type: 'text', placeholder: '09:00 AM, 10:30 AM' },
-                  ].map(field => (
-                    <div key={field.key}>
+                  ].map((field, i) => (
+                    <div key={field.key} className="animate-slide-left" style={{ animationDelay: `${i * 50}ms` }}>
                       <label className="block text-xs font-medium text-slate-600 mb-1.5">{field.label}</label>
                       <input type={field.type} placeholder={field.placeholder || ''}
                         value={profileData[field.key]}
@@ -322,7 +327,7 @@ const DoctorDashboard = () => {
                     className={`${inputClass} h-24 resize-none`} />
                 </div>
                 <button onClick={handleSaveProfile} disabled={saving}
-                  className="mt-5 bg-blue-600 text-white px-8 py-2.5 rounded-xl font-medium text-sm hover:bg-blue-700 transition disabled:opacity-50">
+                  className="mt-5 bg-blue-600 text-white px-8 py-2.5 rounded-xl font-medium text-sm hover:bg-blue-700 transition active:scale-95 disabled:opacity-50">
                   {saving ? 'Saving...' : 'Save Profile'}
                 </button>
               </div>
