@@ -3,7 +3,50 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Custom utilities */
+/* ───────── Base ───────── */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Smooth color changes on interactive elements only */
+a, button, input, select, textarea {
+  transition-property: background-color, border-color, color, box-shadow;
+  transition-duration: 0.2s;
+  transition-timing-function: ease;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+::-webkit-scrollbar-thumb {
+  background: #2563eb;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #1d4ed8;
+}
+
+/* ───────── Components ───────── */
+@layer components {
+  .nav-link {
+    @apply px-4 py-2 text-slate-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg text-sm font-medium transition-all duration-150;
+  }
+
+  .mobile-link {
+    @apply block px-4 py-3 text-slate-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg text-sm font-medium transition-all;
+  }
+
+  /* Reusable hover lift for cards */
+  .card-lift {
+    @apply transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:border-blue-200;
+  }
+}
+
+/* ───────── Utilities ───────── */
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -11,33 +54,94 @@
   overflow: hidden;
 }
 
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
+/* ───────── Keyframes ───────── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-::-webkit-scrollbar-track {
-  background: #f1f1f1;
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
-:::-webkit-scrollbar-thumb {
-  background: #2563eb;
-  border-radius: 4px;
+@keyframes slideLeft {
+  from { opacity: 0; transform: translateX(-28px); }
+  to   { opacity: 1; transform: translateX(0); }
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: #1d4ed8;
+@keyframes slideRight {
+  from { opacity: 0; transform: translateX(28px); }
+  to   { opacity: 1; transform: translateX(0); }
 }
 
-/* Smooth transitions */
-* {
-  transition: background-color 0.3s ease, border-color 0.3s ease;
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.92); }
+  to   { opacity: 1; transform: scale(1); }
 }
 
-.nav-link {
-  @apply px-4 py-2 text-slate-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg text-sm font-medium transition-all duration-150;
+@keyframes gradientShift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
-.mobile-link {
-  @apply block px-4 py-3 text-slate-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg text-sm font-medium transition-all;
+@keyframes floaty {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-6px); }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+/* ───────── Animation classes ───────── */
+.animate-fade-up     { opacity: 0; animation: fadeUp 0.7s ease forwards; }
+.animate-fade-in     { opacity: 0; animation: fadeIn 0.6s ease forwards; }
+.animate-slide-left  { opacity: 0; animation: slideLeft 0.7s ease forwards; }
+.animate-slide-right { opacity: 0; animation: slideRight 0.7s ease forwards; }
+.animate-scale-in    { opacity: 0; animation: scaleIn 0.5s ease forwards; }
+
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradientShift 6s ease infinite;
+}
+
+.animate-floaty { animation: floaty 3s ease-in-out infinite; }
+
+/* Pops in first, then keeps floating */
+.animate-pop-float {
+  opacity: 0;
+  animation:
+    scaleIn 0.5s ease forwards,
+    floaty 3s ease-in-out 0.5s infinite;
+}
+
+/* Loading skeleton */
+.skeleton {
+  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+  background-size: 800px 100%;
+  animation: shimmer 1.4s infinite linear;
+}
+
+/* ───────── Accessibility: respect reduced motion ───────── */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+
+  .animate-fade-up,
+  .animate-fade-in,
+  .animate-slide-left,
+  .animate-slide-right,
+  .animate-scale-in,
+  .animate-pop-float {
+    animation: none !important;
+    opacity: 1 !important;
+  }
+
+  .animate-gradient,
+  .animate-floaty,
+  .skeleton {
+    animation: none !important;
+  }
 }

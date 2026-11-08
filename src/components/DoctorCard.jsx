@@ -25,17 +25,20 @@ const DoctorCard = ({ doctor }) => {
   }
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden">
+    <div className="group bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-xl hover:shadow-blue-100/60 hover:-translate-y-1 hover:border-blue-200 transition-all duration-300 overflow-hidden relative">
+      {/* Accent bar that grows on hover */}
+      <div className="absolute left-0 top-0 h-full w-1 bg-gradient-to-b from-blue-600 to-teal-500 scale-y-0 group-hover:scale-y-100 origin-top transition-transform duration-300" />
+
       <div className="p-5">
         <div className="flex flex-col md:flex-row md:items-start space-y-4 md:space-y-0 md:space-x-5">
-          {/* Avatar */}
           <div className="flex-shrink-0">
-            <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center border border-blue-100">
-              <div className="text-blue-600">{getSpecializationIcon()}</div>
+            <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center border border-blue-100 group-hover:bg-gradient-to-br group-hover:from-blue-600 group-hover:to-teal-500 group-hover:border-transparent transition-all duration-300 group-hover:rotate-3 group-hover:scale-110">
+              <div className="text-blue-600 group-hover:text-white transition-colors duration-300">
+                {getSpecializationIcon()}
+              </div>
             </div>
           </div>
 
-          {/* Info */}
           <div className="flex-1 min-w-0">
             <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between">
               <div className="min-w-0">
@@ -53,7 +56,7 @@ const DoctorCard = ({ doctor }) => {
                 <div className="flex items-center space-x-4 mb-3">
                   <div className="flex items-center space-x-1">
                     <div className="flex items-center bg-amber-50 text-amber-600 px-2 py-1 rounded-lg border border-amber-100">
-                      <Star className="h-3 w-3 mr-1 fill-current" />
+                      <Star className="h-3 w-3 mr-1 fill-current group-hover:animate-pulse" />
                       <span className="text-xs font-semibold">{doctor.rating}</span>
                     </div>
                     <span className="text-slate-400 text-xs">({doctor.total_reviews} reviews)</span>
@@ -84,11 +87,10 @@ const DoctorCard = ({ doctor }) => {
                   <p className="text-slate-500 text-xs mb-3 line-clamp-2">{doctor.description}</p>
                 )}
 
-                {/* Services */}
                 {doctor.services?.length > 0 && (
                   <div className="flex flex-wrap gap-1.5 mb-3">
                     {doctor.services.slice(0, 3).map((service, idx) => (
-                      <span key={idx} className="px-2 py-0.5 bg-slate-50 text-slate-600 text-xs rounded-lg border border-slate-200">
+                      <span key={idx} className="px-2 py-0.5 bg-slate-50 text-slate-600 text-xs rounded-lg border border-slate-200 group-hover:border-blue-200 group-hover:bg-blue-50/50 transition-colors">
                         {service}
                       </span>
                     ))}
@@ -101,25 +103,23 @@ const DoctorCard = ({ doctor }) => {
                 )}
               </div>
 
-              {/* Fee + Actions */}
               <div className="lg:text-right lg:ml-4 flex-shrink-0">
                 <div className="text-xl font-bold text-slate-900">Rs. {doctor.fee}</div>
                 <p className="text-slate-400 text-xs mb-4">Consultation fee</p>
 
                 <div className="flex lg:flex-col space-x-2 lg:space-x-0 lg:space-y-2">
                   <Link to={`/doctor/${doctor.id}`}
-                    className="px-4 py-2 border border-blue-200 text-blue-600 rounded-xl text-xs font-medium hover:bg-blue-50 transition-colors text-center">
+                    className="px-4 py-2 border border-blue-200 text-blue-600 rounded-xl text-xs font-medium hover:bg-blue-50 hover:border-blue-300 transition-all text-center active:scale-95">
                     View Profile
                   </Link>
                   <Link to={`/book-appointment/${doctor.id}`}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-xl text-xs font-medium hover:bg-blue-700 transition-colors text-center">
+                    className="px-4 py-2 bg-blue-600 text-white rounded-xl text-xs font-medium hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-200 transition-all text-center active:scale-95">
                     Book Now
                   </Link>
                 </div>
               </div>
             </div>
 
-            {/* Contact */}
             {doctor.contact?.phone && (
               <div className="flex items-center pt-3 border-t border-slate-50 mt-1">
                 <Phone className="h-3 w-3 mr-1.5 text-teal-500" />
