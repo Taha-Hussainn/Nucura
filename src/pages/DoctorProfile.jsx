@@ -79,8 +79,7 @@ const DoctorProfile = () => {
         <div className="absolute -top-16 -right-10 w-64 h-64 bg-white/10 rounded-full blur-3xl animate-pulse" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col lg:flex-row lg:items-center space-y-4 lg:space-y-0 lg:space-x-6">
-            <div className="w-20 h-20 bg-white/20 rounded-2xl flex items-center justify-center flex-shrink-0 animate-scale-in animate-floaty">
-              <div className="text-white">{getIcon(doctor.specialization)}</div>
+            <div className="w-20 h-20 bg-white/20 rounded-2xl flex items-center justify-center flex-shrink-0 animate-pop-float">                <div className="text-white">{getIcon(doctor.specialization)}</div>
             </div>
             <div className="flex-1 animate-slide-left" style={{ animationDelay: '100ms' }}>
               <h1 className="text-2xl font-bold text-white">{doctor.name}</h1>
