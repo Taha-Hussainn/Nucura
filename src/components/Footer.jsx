@@ -1,195 +1,53 @@
-// components/Footer.jsx
 import { Link } from 'react-router-dom'
-import { Heart, Phone, Mail, MapPin, Facebook, Twitter, Instagram, Linkedin, Shield, Clock } from 'lucide-react'
+import { Phone, Mail, MapPin } from 'lucide-react'
 
 const Footer = () => {
-  const quickLinks = [
-    { name: 'Find Doctors', path: '/doctors' },
-    { name: 'Book Appointment', path: '/book-appointment' },
-    { name: 'About Us', path: '/about' },
-    { name: 'Contact', path: '/contact' },
-    { name: 'Privacy Policy', path: '/privacy' },
-    { name: 'Terms of Service', path: '/terms' },
-  ]
-
-  const specializations = [
-    'Cardiologist',
-    'Dentist',
-    'Neurologist',
-    'Pediatrician',
-    'Dermatologist',
-    'Orthopedic',
-    'Gynecologist',
-    'ENT Specialist',
-  ]
-
-  const cities = [
-      'Karachi',
-      'Lahore', 
-      'Islamabad',
-      'Rawalpindi',
-      'Faisalabad',
-      'Multan',
-      'Hyderabad',
-      'Peshawar',
-      'Quetta'
-  ]
-
-  const contactInfo = [
-    { icon: <Phone className="h-5 w-5" />, text: '+92 1800-123-4567' },
-    { icon: <Mail className="h-5 w-5" />, text: 'support@nucura.pk' },
-    { icon: <MapPin className="h-5 w-5" />, text: '123 Healthcare Street, Medical City, Pakistan' },
-    { icon: <Clock className="h-5 w-5" />, text: '24/7 Emergency Support' },
-  ]
-
   return (
-    <footer className="bg-gray-900 text-white">
-      {/* Top Section */}
+    <footer className="bg-slate-900 text-slate-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
-          
-          {/* Company Info */}
-          <div>
-            <div className="flex items-center mb-6">
-              <div className="h-10 w-10 bg-red-600 rounded-full flex items-center justify-center mr-3">
-                <Heart className="h-6 w-6 text-white" />
-              </div>
-              <span className="text-2xl font-bold">Nucura</span>
-            </div>
-            <p className="text-gray-400 mb-6">
-              Pakistan's leading healthcare platform connecting patients with trusted doctors for better health outcomes.
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div className="md:col-span-1">
+            <Link to="/" className="flex items-center space-x-2 mb-4">
+              <img src="/logo.png" alt="Nucura" className="h-8 w-8 object-contain rounded-lg" />
+              <span className="text-xl font-bold text-white">Nucura</span>
+            </Link>
+            <p className="text-sm text-slate-400 leading-relaxed">
+              Pakistan's digital healthcare platform connecting patients with verified doctors.
             </p>
-            <div className="flex space-x-4">
-              <a href="#" className="bg-gray-800 p-2 rounded-lg hover:bg-red-600 transition">
-                <Facebook className="h-5 w-5" />
-              </a>
-              <a href="#" className="bg-gray-800 p-2 rounded-lg hover:bg-red-600 transition">
-                <Twitter className="h-5 w-5" />
-              </a>
-              <a href="#" className="bg-gray-800 p-2 rounded-lg hover:bg-red-600 transition">
-                <Instagram className="h-5 w-5" />
-              </a>
-              <a href="#" className="bg-gray-800 p-2 rounded-lg hover:bg-red-600 transition">
-                <Linkedin className="h-5 w-5" />
-              </a>
-            </div>
           </div>
 
-          {/* Quick Links */}
           <div>
-            <h3 className="text-lg font-semibold mb-6">Quick Links</h3>
-            <ul className="space-y-3">
-              {quickLinks.map((link, index) => (
-                <li key={index}>
-                  <Link
-                    to={link.path}
-                    className="text-gray-400 hover:text-white transition flex items-center"
-                  >
-                    <span className="h-1 w-1 bg-red-600 rounded-full mr-3"></span>
-                    {link.name}
-                  </Link>
-                </li>
-              ))}
+            <h4 className="text-white font-semibold text-sm mb-4">Platform</h4>
+            <ul className="space-y-2 text-sm">
+              <li><Link to="/doctors" className="hover:text-white transition-colors">Find a Doctor</Link></li>
+              <li><Link to="/signup" className="hover:text-white transition-colors">Create Account</Link></li>
+              <li><Link to="/login" className="hover:text-white transition-colors">Sign In</Link></li>
             </ul>
           </div>
 
-          {/* Specializations */}
           <div>
-            <h3 className="text-lg font-semibold mb-6">Specializations</h3>
-            <div className="grid grid-cols-2 gap-2">
-              {specializations.map((spec, index) => (
-                <Link
-                  key={index}
-                  to={`/doctors?specialization=${spec.toLowerCase()}`}
-                  className="text-gray-400 hover:text-white transition text-sm py-1"
-                >
-                  {spec}
-                </Link>
-              ))}
-            </div>
+            <h4 className="text-white font-semibold text-sm mb-4">Company</h4>
+            <ul className="space-y-2 text-sm">
+              <li><Link to="/about" className="hover:text-white transition-colors">About Us</Link></li>
+              <li><Link to="/contact" className="hover:text-white transition-colors">Contact</Link></li>
+              <li><Link to="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
+              <li><Link to="/terms" className="hover:text-white transition-colors">Terms of Service</Link></li>
+            </ul>
           </div>
 
-          {/* Contact Info */}
           <div>
-            <h3 className="text-lg font-semibold mb-6">Contact Us</h3>
-            <div className="space-y-4">
-              {contactInfo.map((info, index) => (
-                <div key={index} className="flex items-start">
-                  <div className="text-red-500 mr-3 mt-1">
-                    {info.icon}
-                  </div>
-                  <span className="text-gray-400">{info.text}</span>
-                </div>
-              ))}
-            </div>
-            
-            {/* Newsletter */}
-            <div className="mt-8">
-              <h4 className="font-medium mb-3">Subscribe to Newsletter</h4>
-              <div className="flex">
-                <input
-                  type="email"
-                  placeholder="Your email"
-                  className="flex-1 px-4 py-2 bg-gray-800 text-white rounded-l-lg focus:outline-none focus:ring-2 focus:ring-red-500"
-                />
-                <button className="bg-red-600 px-4 py-2 rounded-r-lg hover:bg-red-700 transition">
-                  Subscribe
-                </button>
-              </div>
-            </div>
+            <h4 className="text-white font-semibold text-sm mb-4">Contact</h4>
+            <ul className="space-y-3 text-sm">
+              <li className="flex items-center"><Mail className="h-4 w-4 mr-2 text-teal-400" />support@nucura.com</li>
+              <li className="flex items-center"><Phone className="h-4 w-4 mr-2 text-teal-400" />+92 1800-123-4567</li>
+              <li className="flex items-center"><MapPin className="h-4 w-4 mr-2 text-teal-400" />Karachi, Pakistan</li>
+            </ul>
           </div>
         </div>
 
-        {/* Trust Badges */}
-        <div className="mt-12 pt-8 border-t border-gray-800">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="flex items-center space-x-6 mb-4 md:mb-0">
-              <div className="flex items-center">
-                <Shield className="h-8 w-8 text-green-400 mr-2" />
-                <div>
-                  <p className="text-sm text-gray-400">100% Secure</p>
-                  <p className="text-xs text-gray-500">HIPAA Compliant</p>
-                </div>
-              </div>
-              <div className="flex items-center">
-                <div className="text-2xl mr-2">⭐</div>
-                <div>
-                  <p className="text-sm text-gray-400">4.8/5 Rating</p>
-                  <p className="text-xs text-gray-500">From 10K+ Reviews</p>
-                </div>
-              </div>
-            </div>
-            
-            <div className="flex flex-wrap justify-center gap-4">
-              {cities.map((city, index) => (
-                <span key={index} className="text-gray-400 text-sm hover:text-white transition cursor-pointer">
-                  {city}
-                </span>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Bottom Bar */}
-      <div className="bg-gray-950 py-6">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="text-gray-500 text-sm mb-4 md:mb-0">
-              © {new Date().getFullYear()} Nucura. All rights reserved.
-            </div>
-            <div className="flex items-center space-x-6">
-              <Link to="/privacy" className="text-gray-400 hover:text-white text-sm transition">
-                Privacy Policy
-              </Link>
-              <Link to="/terms" className="text-gray-400 hover:text-white text-sm transition">
-                Terms of Service
-              </Link>
-              <div className="text-gray-400 text-sm">
-                Made with <Heart className="inline h-4 w-4 text-red-500" /> for better healthcare
-              </div>
-            </div>
-          </div>
+        <div className="border-t border-slate-800 mt-10 pt-6 flex flex-col sm:flex-row justify-between items-center text-xs text-slate-500">
+          <p>© {new Date().getFullYear()} Nucura. All rights reserved.</p>
+          <p className="mt-2 sm:mt-0">Emergency? Call 1122</p>
         </div>
       </div>
     </footer>

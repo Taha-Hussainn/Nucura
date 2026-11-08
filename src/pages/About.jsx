@@ -11,7 +11,7 @@ const About = () => {
   const features = [
     { icon: <Shield className="h-5 w-5" />, title: "Verified Doctors", desc: "All doctors undergo rigorous verification", color: "bg-blue-50 text-blue-600" },
     { icon: <Calendar className="h-5 w-5" />, title: "Quick Booking", desc: "Book appointments in under 2 minutes", color: "bg-teal-50 text-teal-600" },
-    { icon: <Heart className="h-5 w-5" />, title: "Patient First", desc: "Designed with patient experience in mind", color: "bg-red-50 text-red-500" },
+    { icon: <Heart className="h-5 w-5" />, title: "Patient First", desc: "Designed with patient experience in mind", color: "bg-sky-50 text-sky-600" },
     { icon: <Users className="h-5 w-5" />, title: "24/7 Support", desc: "Round-the-clock customer support", color: "bg-indigo-50 text-indigo-600" }
   ]
 
