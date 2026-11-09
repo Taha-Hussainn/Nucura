@@ -1,3 +1,4 @@
+import { specializations } from "../data/specializations";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Mail, Lock, User, Stethoscope, Phone, MapPin } from "lucide-react";
@@ -119,10 +120,13 @@ const Signup = () => {
             {userType === "doctor" && (
               <div className="space-y-3 animate-fade-up">
                 <div className="relative">
-                  <Stethoscope className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 h-4 w-4" />
-                  <input name="specialization" type="text" placeholder="Specialization (e.g. Cardiologist)"
-                    className={inputClass} value={formData.specialization} onChange={handleChange} />
-                </div>
+                  <Stethoscope className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 h-4 w-4 pointer-events-none" />
+                  <select name="specialization" required className={inputClass}
+                   value={formData.specialization} onChange={handleChange}>
+                   <option value="">Select specialization</option>
+                   {specializations.map(s => <option key={s} value={s}>{s}</option>)}
+                  </select>
+              </div>
                 <input name="experience" type="text" placeholder="Years of experience"
                   className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
                   value={formData.experience} onChange={handleChange} />

@@ -1,8 +1,22 @@
 import { supabase } from '../supabase/client'
 
+// Returns { data, error } so pages can show the real error instead of an empty list
+export const fetchDoctors = async () => {
+  try {
+    const { data, error } = await supabase.from('doctors').select('*')
+    if (error) {
+      console.error('Doctors fetch error:', error)
+      return { data: [], error: error.message || 'Could not load doctors' }
+    }
+    return { data: data || [], error: null }
+  } catch (err) {
+    console.error('Doctors fetch crashed:', err)
+    return { data: [], error: err.message || 'Could not load doctors' }
+  }
+}
+
 export const getAllDoctors = async () => {
-  const { data, error } = await supabase.from('doctors').select('*')
-  if (error) { console.error(error); return [] }
+  const { data } = await fetchDoctors()
   return data
 }
 
@@ -13,11 +27,9 @@ export const getDoctorById = async (id) => {
 }
 
 export const deleteDoctor = async (id) => {
-  // Remove from doctors table
   const { error: doctorError } = await supabase.from('doctors').delete().eq('id', id)
   if (doctorError) return { success: false, error: doctorError.message }
 
-  // Deactivate from users table so they can't login
   const { error: userError } = await supabase
     .from('users')
     .update({ is_active: false })
