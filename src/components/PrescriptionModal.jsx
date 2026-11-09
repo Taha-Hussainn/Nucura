@@ -9,7 +9,7 @@ const PrescriptionModal = ({ appointment, currentUser, onClose, onCreated }) => 
   const [submitting, setSubmitting] = useState(false)
   const [medicines, setMedicines] = useState([{ name: '', dosage: '', frequency: '', duration: '' }])
 
-  const inputClass = "w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white"
+  const inputClass = "w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white"
 
   const addMedicine = () => setMedicines([...medicines, { name: '', dosage: '', frequency: '', duration: '' }])
   const removeMedicine = (idx) => setMedicines(medicines.filter((_, i) => i !== idx))
@@ -34,34 +34,30 @@ const PrescriptionModal = ({ appointment, currentUser, onClose, onCreated }) => 
       followUpDate
     })
 
-    if (result.success) {
-      onCreated(result.data)
-      onClose()
-    } else {
-      alert('Failed to create prescription: ' + result.error)
-    }
+    if (result.success) { onCreated(result.data); onClose() }
+    else alert('Failed to create prescription: ' + result.error)
     setSubmitting(false)
   }
 
   return (
-    <div className="fixed inset-0 bg-slate-900/50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-5 bg-gradient-to-r from-blue-700 to-teal-700 rounded-t-2xl">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
+    <div className="fixed inset-0 bg-slate-900/50 flex items-end sm:items-center justify-center sm:p-4 z-[60]">
+      <div className="bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl w-full sm:max-w-2xl max-h-[92dvh] overflow-y-auto">
+        <div className="sticky top-0 z-10 flex items-center justify-between p-4 sm:p-5 bg-gradient-to-r from-blue-700 to-teal-700 sm:rounded-t-2xl">
+          <div className="flex flex-wrap items-center gap-1">
+            <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center flex-shrink-0">
               <FileText className="h-5 w-5 text-white" />
             </div>
-            <div>
+            <div className="min-w-0">
               <h2 className="text-lg font-bold text-white">Write Prescription</h2>
-              <p className="text-blue-100 text-xs">Patient: {appointment.patient_name}</p>
+              <p className="text-blue-100 text-xs truncate">Patient: {appointment.patient_name}</p>
             </div>
           </div>
-          <button onClick={onClose} className="text-white hover:bg-white/20 p-1.5 rounded-lg transition">
+          <button onClick={onClose} aria-label="Close" className="text-white hover:bg-white/20 p-2.5 rounded-lg transition flex-shrink-0">
             <X className="h-4 w-4" />
           </button>
         </div>
 
-        <div className="p-5 space-y-5">
+        <div className="p-4 sm:p-5 space-y-5">
           <div>
             <label className="block text-xs font-semibold text-slate-600 mb-2">Diagnosis *</label>
             <textarea placeholder="Enter diagnosis..."
@@ -72,14 +68,14 @@ const PrescriptionModal = ({ appointment, currentUser, onClose, onCreated }) => 
           <div>
             <div className="flex items-center justify-between mb-3">
               <label className="text-xs font-semibold text-slate-600">Medicines *</label>
-              <button onClick={addMedicine} className="flex items-center text-xs text-blue-600 hover:text-blue-700 font-medium">
+              <button onClick={addMedicine} className="flex items-center text-xs text-blue-600 hover:text-blue-700 font-medium p-1">
                 <Plus className="h-3 w-3 mr-1" />Add Medicine
               </button>
             </div>
             <div className="space-y-3">
               {medicines.map((med, idx) => (
-                <div key={idx} className="p-4 bg-slate-50 rounded-xl border border-slate-100">
-                  <div className="grid grid-cols-2 gap-3 mb-2">
+                <div key={idx} className="p-3 sm:p-4 bg-slate-50 rounded-xl border border-slate-100">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-2">
                     <div>
                       <label className="block text-xs text-slate-500 mb-1">Medicine Name</label>
                       <input type="text" placeholder="e.g. Paracetamol" className={inputClass}
@@ -111,7 +107,7 @@ const PrescriptionModal = ({ appointment, currentUser, onClose, onCreated }) => 
                     </div>
                   </div>
                   {medicines.length > 1 && (
-                    <button onClick={() => removeMedicine(idx)} className="flex items-center text-red-500 hover:text-red-700 text-xs">
+                    <button onClick={() => removeMedicine(idx)} className="flex items-center text-red-500 hover:text-red-700 text-xs py-1">
                       <Trash2 className="h-3 w-3 mr-1" />Remove
                     </button>
                   )}
@@ -134,13 +130,13 @@ const PrescriptionModal = ({ appointment, currentUser, onClose, onCreated }) => 
               value={followUpDate} onChange={(e) => setFollowUpDate(e.target.value)} />
           </div>
 
-          <div className="flex space-x-3">
+          <div className="flex gap-3 pb-safe">
             <button onClick={onClose}
-              className="flex-1 py-3 border border-slate-200 rounded-xl hover:bg-slate-50 text-sm text-slate-600 font-medium">
+              className="flex-1 py-3 border border-slate-200 rounded-xl hover:bg-slate-50 text-sm text-slate-600 font-medium active:scale-[0.98] transition">
               Cancel
             </button>
             <button onClick={handleSubmit} disabled={submitting}
-              className="flex-1 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 text-sm font-semibold disabled:opacity-50">
+              className="flex-1 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 text-sm font-semibold disabled:opacity-50 active:scale-[0.98] transition">
               {submitting ? 'Creating...' : 'Create Prescription'}
             </button>
           </div>

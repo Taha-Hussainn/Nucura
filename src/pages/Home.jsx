@@ -94,13 +94,13 @@ const Home = () => {
     <div className="overflow-hidden">
 
       {/* HERO */}
-      <section className="relative bg-gradient-to-br from-slate-900 via-blue-900 to-teal-800 animate-gradient min-h-[92vh] flex items-center">
+      <section className="relative bg-gradient-to-br from-slate-900 via-blue-900 to-teal-800 animate-gradient min-h-[85vh] sm:min-h-[92vh] flex items-center">
         <div className="absolute -top-24 -left-24 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl animate-pulse" />
         <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-teal-400/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
         <div className="absolute inset-0 opacity-60"
           style={{ backgroundImage: 'radial-gradient(rgba(255,255,255,0.08) 1px, transparent 1px)', backgroundSize: '28px 28px' }} />
 
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 w-full">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24 w-full">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
               <div className="animate-fade-up inline-flex items-center bg-white/10 border border-white/20 rounded-full px-4 py-2 mb-8">
@@ -111,7 +111,7 @@ const Home = () => {
                 <span className="text-blue-100 text-sm font-medium">Digital healthcare for Pakistan</span>
               </div>
 
-              <h1 className="animate-fade-up text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight" style={{ animationDelay: '100ms' }}>
+              <h1 className="animate-fade-up text-4xl sm:text-5xl lg:text-7xl font-bold text-white mb-6 leading-tight" style={{ animationDelay: '100ms' }}>
                 Healthcare Made
                 <br />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-300 to-blue-300">Simple & Accessible</span>
@@ -139,7 +139,7 @@ const Home = () => {
                 </button>
               </form>
 
-              <div className="animate-fade-up flex gap-10" style={{ animationDelay: '450ms' }}>
+              <div className="animate-fade-up flex gap-6 sm:gap-10" style={{ animationDelay: '450ms' }}>
                 {liveStats.map((s, i) => (
                   <div key={i}>
                     <div className="text-3xl font-bold text-white">{s.node}</div>

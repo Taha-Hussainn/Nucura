@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { Star, MapPin, Clock, Calendar, Award, Briefcase, Phone, Mail, Shield, Heart, Brain, Baby, Eye, Bone, User, Ear, Pill, Stethoscope, CheckCircle, AlertCircle } from 'lucide-react'
+import { Star, MapPin, Clock, Calendar, Award, Briefcase, Phone, Mail, Shield, CheckCircle, AlertCircle } from 'lucide-react'
 import ReviewCard from '../components/ReviewCard'
 import AddReviewModal from '../components/AddReviewModal'
 import Reveal from '../components/Reveal'
 import { getDoctorById } from '../api/doctors'
 import { getReviewsByDoctor } from '../api/reviews'
 import { getCurrentUser } from '../api/auth'
+import { getSpecializationIcon } from '../data/specializations'
 
 const DoctorProfile = () => {
   const { id } = useParams()
@@ -24,7 +25,6 @@ const DoctorProfile = () => {
     getCurrentUser().then(user => setCurrentUser(user))
   }, [id])
 
-  // Animate rating bars from 0 each time the Reviews tab opens
   useEffect(() => {
     if (activeTab !== 'reviews') return
     setBarsReady(false)
@@ -37,18 +37,6 @@ const DoctorProfile = () => {
   const avgRating = reviews.length > 0
     ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1)
     : doctor?.rating || 0
-
-  const getIcon = (spec) => {
-    const map = {
-      'Cardiologist': <Heart className="h-8 w-8" />, 'Dentist': <Stethoscope className="h-8 w-8" />,
-      'Neurologist': <Brain className="h-8 w-8" />, 'Pediatrician': <Baby className="h-8 w-8" />,
-      'Dermatologist': <Shield className="h-8 w-8" />, 'Orthopedic': <Bone className="h-8 w-8" />,
-      'Gynecologist': <User className="h-8 w-8" />, 'ENT Specialist': <Ear className="h-8 w-8" />,
-      'Psychiatrist': <Brain className="h-8 w-8" />, 'Ophthalmologist': <Eye className="h-8 w-8" />,
-      'Gastroenterologist': <Pill className="h-8 w-8" />, 'General Physician': <Stethoscope className="h-8 w-8" />
-    }
-    return map[spec] || <Stethoscope className="h-8 w-8" />
-  }
 
   if (loading) return (
     <div className="min-h-screen bg-slate-50">
@@ -66,43 +54,49 @@ const DoctorProfile = () => {
     <div className="max-w-7xl mx-auto px-4 py-16 text-center animate-scale-in">
       <AlertCircle className="h-12 w-12 text-slate-300 mx-auto mb-4" />
       <h1 className="text-2xl font-bold text-slate-900 mb-2">Doctor Not Found</h1>
-      <Link to="/doctors" className="bg-blue-600 text-white px-6 py-2.5 rounded-xl text-sm font-medium hover:bg-blue-700">
+      <Link to="/doctors" className="inline-block mt-2 bg-blue-600 text-white px-6 py-2.5 rounded-xl text-sm font-medium hover:bg-blue-700">
         Browse Doctors
       </Link>
     </div>
   )
 
+  const Icon = getSpecializationIcon(doctor.specialization)
+
   return (
     <div className="min-h-screen bg-slate-50">
-      {/* Animated Header Banner */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-blue-700 via-teal-600 to-blue-700 animate-gradient py-8">
+      {/* Banner */}
+      <div className="relative overflow-hidden bg-gradient-to-r from-blue-700 via-teal-600 to-blue-700 animate-gradient py-6 sm:py-8">
         <div className="absolute -top-16 -right-10 w-64 h-64 bg-white/10 rounded-full blur-3xl animate-pulse" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col lg:flex-row lg:items-center space-y-4 lg:space-y-0 lg:space-x-6">
-            <div className="w-20 h-20 bg-white/20 rounded-2xl flex items-center justify-center flex-shrink-0 animate-pop-float">                <div className="text-white">{getIcon(doctor.specialization)}</div>
-            </div>
-            <div className="flex-1 animate-slide-left" style={{ animationDelay: '100ms' }}>
-              <h1 className="text-2xl font-bold text-white">{doctor.name}</h1>
-              <div className="flex items-center space-x-4 mt-1">
-                <span className="text-teal-100 font-medium text-sm">{doctor.specialization}</span>
-                <span className="text-blue-100 text-sm flex items-center">
-                  <Briefcase className="h-3 w-3 mr-1" />{doctor.experience} years exp
-                </span>
+          <div className="flex flex-col lg:flex-row lg:items-center gap-5 lg:gap-6">
+            <div className="flex items-center gap-4 flex-1 min-w-0">
+              <div className="w-16 h-16 sm:w-20 sm:h-20 bg-white/20 rounded-2xl flex items-center justify-center flex-shrink-0 animate-pop-float">
+                <Icon className="h-8 w-8 text-white" />
               </div>
-              <p className="text-blue-100 text-sm mt-1">{doctor.qualification}</p>
+              <div className="min-w-0 animate-slide-left" style={{ animationDelay: '100ms' }}>
+                <h1 className="text-xl sm:text-2xl font-bold text-white break-words">{doctor.name}</h1>
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1">
+                  <span className="text-teal-100 font-medium text-sm">{doctor.specialization}</span>
+                  <span className="text-blue-100 text-sm flex items-center">
+                    <Briefcase className="h-3 w-3 mr-1" />{doctor.experience || 0} years exp
+                  </span>
+                </div>
+                {doctor.qualification && <p className="text-blue-100 text-sm mt-1 break-words">{doctor.qualification}</p>}
+              </div>
             </div>
-            <div className="flex items-center space-x-4 animate-fade-in" style={{ animationDelay: '300ms' }}>
+
+            <div className="flex flex-wrap items-center gap-3 sm:gap-4 animate-fade-in" style={{ animationDelay: '300ms' }}>
               <div className="flex items-center bg-white/20 px-3 py-1.5 rounded-xl">
                 <Star className="h-4 w-4 text-yellow-300 fill-current mr-1" />
                 <span className="font-bold text-white">{avgRating}</span>
                 <span className="text-blue-100 text-sm ml-1">({reviews.length})</span>
               </div>
-              <div className="text-right">
-                <div className="text-2xl font-bold text-white">Rs. {doctor.fee}</div>
+              <div>
+                <div className="text-xl sm:text-2xl font-bold text-white">Rs. {doctor.fee || 0}</div>
                 <p className="text-blue-100 text-xs">Consultation fee</p>
               </div>
               <Link to={`/book-appointment/${doctor.id}`}
-                className="bg-white text-blue-700 px-6 py-2.5 rounded-xl font-semibold text-sm hover:bg-blue-50 hover:scale-105 active:scale-95 transition-all shadow-lg">
+                className="w-full sm:w-auto text-center bg-white text-blue-700 px-6 py-3 rounded-xl font-semibold text-sm hover:bg-blue-50 active:scale-95 transition-all shadow-lg">
                 Book Appointment
               </Link>
             </div>
@@ -110,17 +104,17 @@ const DoctorProfile = () => {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Quick Info */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        {/* Quick info */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
           {[
-            { icon: <MapPin className="h-4 w-4" />, label: 'Location', value: doctor.location },
+            { icon: <MapPin className="h-4 w-4" />, label: 'Location', value: doctor.location || 'Not set' },
             { icon: <Clock className="h-4 w-4" />, label: 'Available', value: doctor.available_time || 'Not set' },
             { icon: <Phone className="h-4 w-4" />, label: 'Phone', value: doctor.contact?.phone || 'Not listed' },
             { icon: <Mail className="h-4 w-4" />, label: 'Email', value: doctor.contact?.email || 'Not listed' }
           ].map((item, i) => (
             <Reveal key={i} delay={i * 100} variant="scale">
-              <div className="bg-white rounded-xl border border-slate-100 p-4 hover:-translate-y-1 hover:shadow-md hover:border-blue-200 transition-all duration-300">
+              <div className="bg-white rounded-xl border border-slate-100 p-3 sm:p-4 hover:-translate-y-1 hover:shadow-md hover:border-blue-200 transition-all duration-300">
                 <div className="flex items-center space-x-2 text-blue-600 mb-1">
                   {item.icon}
                   <span className="text-xs font-medium text-slate-500">{item.label}</span>
@@ -135,13 +129,13 @@ const DoctorProfile = () => {
         <Reveal>
           <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden">
             <div className="border-b border-slate-100 px-2">
-              <nav className="flex space-x-1 overflow-x-auto">
+              <nav className="flex space-x-1 overflow-x-auto no-scrollbar">
                 {['overview', 'availability', 'reviews', 'services'].map(tab => (
                   <button key={tab} onClick={() => setActiveTab(tab)}
                     className={`relative py-4 px-4 text-sm font-medium whitespace-nowrap transition-colors ${
                       activeTab === tab ? 'text-blue-600' : 'text-slate-500 hover:text-slate-700'
                     }`}>
-                    {tab === 'reviews' ? `Reviews (${reviews?.length || 0})` : tab.charAt(0).toUpperCase() + tab.slice(1)}
+                    {tab === 'reviews' ? `Reviews (${reviews.length})` : tab.charAt(0).toUpperCase() + tab.slice(1)}
                     <span className={`absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-600 to-teal-500 origin-left transition-transform duration-300 ${
                       activeTab === tab ? 'scale-x-100' : 'scale-x-0'
                     }`} />
@@ -150,23 +144,19 @@ const DoctorProfile = () => {
               </nav>
             </div>
 
-            {/* key forces the fade to replay on every tab switch */}
-            <div key={activeTab} className="p-6 animate-fade-up">
+            <div key={activeTab} className="p-4 sm:p-6 animate-fade-up">
               {activeTab === 'overview' && (
                 <div>
-                  <h2 className="text-lg font-bold text-slate-900 mb-3">About {doctor.name}</h2>
-                  <p className="text-slate-600 text-sm leading-relaxed mb-6">{doctor.description}</p>
+                  <h2 className="text-lg font-bold text-slate-900 mb-3 break-words">About {doctor.name}</h2>
+                  <p className="text-slate-600 text-sm leading-relaxed mb-6">{doctor.description || 'No description added yet.'}</p>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {doctor.education?.length > 0 && (
                       <div>
-                        <h3 className="font-semibold text-slate-800 mb-3 flex items-center text-sm">
-                          <Award className="h-4 w-4 mr-2 text-blue-600" />Education
-                        </h3>
+                        <h3 className="font-semibold text-slate-800 mb-3 flex items-center text-sm"><Award className="h-4 w-4 mr-2 text-blue-600" />Education</h3>
                         <ul className="space-y-2">
                           {doctor.education.map((edu, idx) => (
                             <li key={idx} className="flex items-start text-sm text-slate-600 animate-slide-left" style={{ animationDelay: `${idx * 100}ms` }}>
-                              <div className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-1.5 mr-2 flex-shrink-0"></div>
-                              {edu}
+                              <div className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-1.5 mr-2 flex-shrink-0"></div>{edu}
                             </li>
                           ))}
                         </ul>
@@ -174,14 +164,11 @@ const DoctorProfile = () => {
                     )}
                     {doctor.awards?.length > 0 && (
                       <div>
-                        <h3 className="font-semibold text-slate-800 mb-3 flex items-center text-sm">
-                          <Award className="h-4 w-4 mr-2 text-teal-600" />Awards
-                        </h3>
+                        <h3 className="font-semibold text-slate-800 mb-3 flex items-center text-sm"><Award className="h-4 w-4 mr-2 text-teal-600" />Awards</h3>
                         <ul className="space-y-2">
                           {doctor.awards.map((award, idx) => (
                             <li key={idx} className="flex items-start text-sm text-slate-600 animate-slide-left" style={{ animationDelay: `${idx * 100}ms` }}>
-                              <div className="w-1.5 h-1.5 bg-teal-500 rounded-full mt-1.5 mr-2 flex-shrink-0"></div>
-                              {award}
+                              <div className="w-1.5 h-1.5 bg-teal-500 rounded-full mt-1.5 mr-2 flex-shrink-0"></div>{award}
                             </li>
                           ))}
                         </ul>
@@ -196,16 +183,12 @@ const DoctorProfile = () => {
                   <h2 className="text-lg font-bold text-slate-900 mb-4">Availability</h2>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <h3 className="font-medium text-slate-700 mb-3 flex items-center text-sm">
-                        <Calendar className="h-4 w-4 mr-2 text-blue-600" />Available Days
-                      </h3>
+                      <h3 className="font-medium text-slate-700 mb-3 flex items-center text-sm"><Calendar className="h-4 w-4 mr-2 text-blue-600" />Available Days</h3>
                       <div className="grid grid-cols-2 gap-2">
                         {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day, i) => (
                           <div key={day} style={{ animationDelay: `${i * 60}ms` }}
                             className={`animate-scale-in p-3 rounded-xl border text-xs ${
-                              doctor.available_days?.includes(day)
-                                ? 'bg-teal-50 border-teal-200 text-teal-700'
-                                : 'bg-slate-50 border-slate-100 text-slate-400'
+                              doctor.available_days?.includes(day) ? 'bg-teal-50 border-teal-200 text-teal-700' : 'bg-slate-50 border-slate-100 text-slate-400'
                             }`}>
                             <div className="flex items-center justify-between">
                               <span className="font-medium">{day}</span>
@@ -219,19 +202,18 @@ const DoctorProfile = () => {
                       <h3 className="font-medium text-slate-700 mb-3 text-sm">Clinic Information</h3>
                       <div className="space-y-3">
                         {doctor.hospital && (
-                          <div className="p-4 bg-slate-50 rounded-xl border border-slate-100 hover:border-blue-200 transition-colors">
+                          <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
                             <h4 className="font-medium text-slate-800 text-sm mb-1">{doctor.hospital}</h4>
-                            <p className="text-slate-500 text-xs flex items-center">
-                              <MapPin className="h-3 w-3 mr-1" />{doctor.location}
-                            </p>
+                            <p className="text-slate-500 text-xs flex items-center"><MapPin className="h-3 w-3 mr-1" />{doctor.location}</p>
                           </div>
                         )}
                         {doctor.clinic && (
-                          <div className="p-4 bg-slate-50 rounded-xl border border-slate-100 hover:border-blue-200 transition-colors">
+                          <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
                             <h4 className="font-medium text-slate-800 text-sm mb-1">{doctor.clinic}</h4>
                             <p className="text-slate-500 text-xs">Private Clinic</p>
                           </div>
                         )}
+                        {!doctor.hospital && !doctor.clinic && <p className="text-slate-400 text-sm">Clinic details not added yet.</p>}
                       </div>
                     </div>
                   </div>
@@ -240,12 +222,12 @@ const DoctorProfile = () => {
 
               {activeTab === 'reviews' && (
                 <div>
-                  <div className="flex flex-col md:flex-row md:items-center justify-between mb-6">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
                     <div>
                       <h2 className="text-lg font-bold text-slate-900">Patient Reviews</h2>
-                      <p className="text-slate-500 text-sm">{reviews.length} verified reviews</p>
+                      <p className="text-slate-500 text-sm">{reviews.length} reviews</p>
                     </div>
-                    <div className="mt-3 md:mt-0 flex items-center space-x-4">
+                    <div className="flex flex-wrap items-center gap-4">
                       <div className="text-center">
                         <div className="text-3xl font-bold text-slate-900">{avgRating}</div>
                         <div className="flex items-center justify-center">
@@ -257,11 +239,11 @@ const DoctorProfile = () => {
                       </div>
                       {currentUser?.userType === 'patient' ? (
                         <button onClick={() => setShowReviewModal(true)}
-                          className="bg-blue-600 text-white px-5 py-2 rounded-xl text-sm font-medium hover:bg-blue-700 transition active:scale-95">
+                          className="bg-blue-600 text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-blue-700 transition active:scale-95">
                           Write Review
                         </button>
                       ) : !currentUser && (
-                        <Link to="/login" className="bg-blue-600 text-white px-5 py-2 rounded-xl text-sm font-medium hover:bg-blue-700 transition">
+                        <Link to="/login" className="bg-blue-600 text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-blue-700 transition">
                           Login to Review
                         </Link>
                       )}
@@ -309,7 +291,7 @@ const DoctorProfile = () => {
                 <div>
                   <h2 className="text-lg font-bold text-slate-900 mb-4">Services</h2>
                   {doctor.services?.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                       {doctor.services.map((service, idx) => (
                         <div key={idx} style={{ animationDelay: `${idx * 80}ms` }}
                           className="animate-scale-in p-4 bg-blue-50 rounded-xl border border-blue-100 flex items-start space-x-3 hover:-translate-y-1 hover:shadow-md transition-all duration-300">

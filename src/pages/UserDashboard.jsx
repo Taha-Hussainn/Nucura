@@ -11,6 +11,7 @@ import PrescriptionCard from '../components/PrescriptionCard'
 import { uploadMedicalRecord, getMedicalRecordsByPatient, deleteMedicalRecord } from '../api/medicalRecords'
 import Reveal from '../components/Reveal'
 import CountUp from '../components/CountUp'
+import MobileTabs from '../components/MobileTabs'
 
 const UserDashboard = () => {
   const [activeTab, setActiveTab] = useState('appointments')
@@ -59,6 +60,7 @@ const UserDashboard = () => {
     if (result.success) { setRecords(prev => [result.data, ...prev]); alert('File uploaded successfully!') }
     else alert('Upload failed: ' + result.error)
     setUploading(false)
+    e.target.value = ''
   }
 
   const handleDeleteRecord = async (id, fileUrl) => {
@@ -75,11 +77,11 @@ const UserDashboard = () => {
   }
 
   const navItems = [
-    { key: 'appointments', label: 'Appointments', icon: <Calendar className="h-4 w-4 mr-3" />, count: appointments.length },
-    { key: 'chats', label: 'My Chats', icon: <MessageCircle className="h-4 w-4 mr-3" />, count: chats.length },
-    { key: 'prescriptions', label: 'Prescriptions', icon: <FileText className="h-4 w-4 mr-3" />, count: prescriptions.length },
-    { key: 'records', label: 'Medical Records', icon: <Upload className="h-4 w-4 mr-3" />, count: records.length },
-    { key: 'profile', label: 'Profile', icon: <User className="h-4 w-4 mr-3" />, count: 0 },
+    { key: 'appointments', label: 'Appointments', icon: Calendar, count: appointments.length },
+    { key: 'chats', label: 'My Chats', icon: MessageCircle, count: chats.length },
+    { key: 'prescriptions', label: 'Prescriptions', icon: FileText, count: prescriptions.length },
+    { key: 'records', label: 'Medical Records', icon: Upload, count: records.length },
+    { key: 'profile', label: 'Profile', icon: User, count: 0 },
   ]
 
   const stats = [
@@ -89,31 +91,31 @@ const UserDashboard = () => {
     { label: 'Records', value: records.length, color: 'bg-indigo-50 text-indigo-600', icon: <Upload className="h-5 w-5" /> },
   ]
 
-  const inputClass = "w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+  const inputClass = "w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white"
 
   return (
     <div className="min-h-screen bg-slate-50">
-      {/* Animated banner */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-blue-700 via-teal-600 to-blue-700 animate-gradient py-8">
+      {/* Banner */}
+      <div className="relative overflow-hidden bg-gradient-to-r from-blue-700 via-teal-600 to-blue-700 animate-gradient py-6 sm:py-8">
         <div className="absolute -top-16 -right-10 w-64 h-64 bg-white/10 rounded-full blur-3xl animate-pulse" />
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
-          <div className="animate-slide-left">
-            <h1 className="text-2xl font-bold text-white">My Dashboard</h1>
-            <p className="text-blue-100 text-sm mt-1">Welcome back, {currentUser?.name || '...'}</p>
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="animate-slide-left min-w-0">
+            <h1 className="text-xl sm:text-2xl font-bold text-white">My Dashboard</h1>
+            <p className="text-blue-100 text-sm mt-1 truncate">Welcome back, {currentUser?.name || '...'}</p>
           </div>
           <Link to="/doctors"
-            className="animate-slide-right bg-white text-blue-700 px-5 py-2.5 rounded-xl font-semibold flex items-center text-sm hover:scale-105 active:scale-95 transition-transform shadow-lg">
+            className="animate-slide-right bg-white text-blue-700 px-5 py-3 rounded-xl font-semibold flex items-center justify-center text-sm active:scale-95 transition-transform shadow-lg">
             <Plus className="h-4 w-4 mr-2" />New Appointment
           </Link>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 -mt-14 relative z-10">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8 -mt-12 sm:-mt-14 relative z-10">
           {stats.map((s, i) => (
             <Reveal key={s.label} delay={i * 100} variant="scale">
-              <div className="bg-white rounded-2xl border border-slate-100 shadow-lg shadow-blue-900/5 p-5 card-lift">
+              <div className="bg-white rounded-2xl border border-slate-100 shadow-lg shadow-blue-900/5 p-4 sm:p-5 card-lift">
                 <div className={`inline-flex items-center justify-center w-9 h-9 ${s.color} rounded-xl mb-3`}>{s.icon}</div>
                 <p className="text-xs text-slate-500 mb-1">{s.label}</p>
                 <p className="text-2xl font-bold text-slate-900"><CountUp value={s.value} /></p>
@@ -122,12 +124,15 @@ const UserDashboard = () => {
           ))}
         </div>
 
+        {/* Mobile tab bar */}
+        <MobileTabs items={navItems} active={activeTab} onChange={setActiveTab} />
+
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Sidebar */}
-          <div className="lg:col-span-1 animate-slide-left">
+          {/* Sidebar (desktop only) */}
+          <div className="hidden lg:block lg:col-span-1 animate-slide-left">
             <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
               <div className="flex items-center space-x-3 mb-6 pb-6 border-b border-slate-100">
-                <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-teal-500 rounded-xl flex items-center justify-center">
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-teal-500 rounded-xl flex items-center justify-center flex-shrink-0">
                   <span className="text-white font-bold text-lg">{currentUser?.name?.charAt(0)?.toUpperCase() || 'U'}</span>
                 </div>
                 <div className="min-w-0">
@@ -142,7 +147,7 @@ const UserDashboard = () => {
                     className={`w-full flex items-center px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
                       activeTab === item.key ? 'bg-blue-600 text-white shadow-md shadow-blue-200' : 'text-slate-600 hover:bg-slate-50 hover:translate-x-1'
                     }`}>
-                    {item.icon}{item.label}
+                    <item.icon className="h-4 w-4 mr-3" />{item.label}
                     {item.count > 0 && (
                       <span className={`ml-auto text-xs rounded-full w-5 h-5 flex items-center justify-center ${
                         activeTab === item.key ? 'bg-white text-blue-600' : 'bg-blue-100 text-blue-600'
@@ -158,20 +163,18 @@ const UserDashboard = () => {
             </div>
           </div>
 
-          {/* Main (key replays the fade on every tab switch) */}
-          <div key={activeTab} className="lg:col-span-3 animate-fade-up">
+          {/* Main */}
+          <div key={activeTab} className="lg:col-span-3 min-w-0 animate-fade-up">
             {activeTab === 'appointments' && (
               <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-                <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+                <div className="px-4 sm:px-6 py-4 border-b border-slate-100 flex items-center justify-between">
                   <h2 className="font-semibold text-slate-900">My Appointments</h2>
                   <span className="text-xs text-slate-400">{appointments.length} total</span>
                 </div>
                 {loading ? (
-                  <div className="p-6 space-y-4">
-                    {[...Array(3)].map((_, i) => <div key={i} className="h-20 rounded-xl skeleton" />)}
-                  </div>
+                  <div className="p-4 sm:p-6 space-y-4">{[...Array(3)].map((_, i) => <div key={i} className="h-20 rounded-xl skeleton" />)}</div>
                 ) : appointments.length === 0 ? (
-                  <div className="p-12 text-center">
+                  <div className="p-10 text-center">
                     <Calendar className="h-10 w-10 mx-auto mb-3 text-slate-200 animate-floaty" />
                     <p className="text-slate-500 text-sm">No appointments yet.</p>
                     <Link to="/doctors" className="text-blue-600 text-sm font-medium hover:underline mt-2 inline-block">Book your first appointment</Link>
@@ -180,30 +183,30 @@ const UserDashboard = () => {
                   <div className="divide-y divide-slate-50">
                     {appointments.map((apt, i) => (
                       <div key={apt.id} style={{ animationDelay: `${Math.min(i, 6) * 80}ms` }}
-                        className="animate-fade-up p-5 hover:bg-slate-50 transition-colors">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <h3 className="font-semibold text-slate-900">{apt.doctor_name}</h3>
-                            <div className="flex items-center space-x-4 mt-1.5">
+                        className="animate-fade-up p-4 sm:p-5 hover:bg-slate-50 transition-colors">
+                        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
+                          <div className="min-w-0">
+                            <h3 className="font-semibold text-slate-900 break-words">{apt.doctor_name}</h3>
+                            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1.5">
                               <span className="flex items-center text-slate-500 text-xs"><Calendar className="h-3 w-3 mr-1" />{apt.date}</span>
                               <span className="flex items-center text-slate-500 text-xs"><Clock className="h-3 w-3 mr-1" />{apt.time}</span>
                             </div>
-                            {apt.symptoms && <p className="text-slate-400 text-xs mt-1.5">{apt.symptoms}</p>}
+                            {apt.symptoms && <p className="text-slate-400 text-xs mt-1.5 break-words">{apt.symptoms}</p>}
                           </div>
-                          <div className="text-right">
+                          <div className="flex items-center justify-between sm:block sm:text-right flex-shrink-0">
                             <span className={`px-2.5 py-1 rounded-lg text-xs font-medium capitalize ${statusColor(apt.status)}`}>{apt.status}</span>
-                            <p className="text-lg font-bold text-slate-900 mt-1.5">Rs. {apt.fee}</p>
+                            <p className="text-lg font-bold text-slate-900 sm:mt-1.5">Rs. {apt.fee}</p>
                           </div>
                         </div>
-                        <div className="flex justify-end space-x-2 mt-3">
+                        <div className="flex justify-end gap-2 mt-3">
                           {apt.status === 'pending' && (
                             <button onClick={() => handleCancel(apt.id)}
-                              className="px-3 py-1.5 bg-red-50 text-red-600 border border-red-200 rounded-lg hover:bg-red-100 text-xs font-medium active:scale-95 transition">
+                              className="px-4 py-2 bg-red-50 text-red-600 border border-red-200 rounded-lg hover:bg-red-100 text-xs font-medium active:scale-95 transition">
                               Cancel
                             </button>
                           )}
                           <button onClick={() => handleDelete(apt.id)}
-                            className="px-3 py-1.5 border border-slate-200 rounded-lg hover:bg-slate-50 text-xs text-slate-500 flex items-center active:scale-95 transition">
+                            className="px-4 py-2 border border-slate-200 rounded-lg hover:bg-slate-50 text-xs text-slate-500 flex items-center active:scale-95 transition">
                             <Trash2 className="h-3 w-3 mr-1" />Delete
                           </button>
                         </div>
@@ -216,9 +219,9 @@ const UserDashboard = () => {
 
             {activeTab === 'chats' && (
               <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-                <div className="px-6 py-4 border-b border-slate-100"><h2 className="font-semibold text-slate-900">My Chats</h2></div>
+                <div className="px-4 sm:px-6 py-4 border-b border-slate-100"><h2 className="font-semibold text-slate-900">My Chats</h2></div>
                 {chats.length === 0 ? (
-                  <div className="p-12 text-center">
+                  <div className="p-10 text-center">
                     <MessageCircle className="h-10 w-10 mx-auto mb-3 text-slate-200 animate-floaty" />
                     <p className="text-slate-500 text-sm">No chats yet.</p>
                     <p className="text-slate-400 text-xs mt-1">Book an appointment to start chatting with a doctor.</p>
@@ -227,19 +230,19 @@ const UserDashboard = () => {
                   <div className="divide-y divide-slate-50">
                     {chats.map((chat, i) => (
                       <div key={chat.id} style={{ animationDelay: `${Math.min(i, 6) * 80}ms` }}
-                        className="animate-fade-up p-4 flex items-center justify-between hover:bg-slate-50 transition-colors">
-                        <div className="flex items-center space-x-3">
-                          <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
+                        className="animate-fade-up p-4 flex items-center justify-between gap-3 hover:bg-slate-50 transition-colors">
+                        <div className="flex items-center space-x-3 min-w-0">
+                          <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center flex-shrink-0">
                             <span className="text-blue-700 font-bold text-sm">Dr</span>
                           </div>
-                          <div>
-                            <p className="font-medium text-slate-900 text-sm">{chat.doctor_name}</p>
+                          <div className="min-w-0">
+                            <p className="font-medium text-slate-900 text-sm truncate">{chat.doctor_name}</p>
                             <p className="text-slate-400 text-xs">Tap to open chat</p>
                           </div>
                         </div>
                         <button onClick={() => setActiveChat(chat)}
-                          className="px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 text-xs font-medium flex items-center active:scale-95 transition">
-                          <MessageCircle className="h-3 w-3 mr-1.5" />Open Chat
+                          className="flex-shrink-0 px-4 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 text-xs font-medium flex items-center active:scale-95 transition">
+                          <MessageCircle className="h-3 w-3 mr-1.5" />Open
                         </button>
                       </div>
                     ))}
@@ -250,12 +253,12 @@ const UserDashboard = () => {
 
             {activeTab === 'prescriptions' && (
               <div className="space-y-4">
-                <div className="bg-white rounded-2xl border border-slate-100 shadow-sm px-6 py-4 flex items-center justify-between">
+                <div className="bg-white rounded-2xl border border-slate-100 shadow-sm px-4 sm:px-6 py-4 flex items-center justify-between">
                   <h2 className="font-semibold text-slate-900">My Prescriptions</h2>
                   <span className="text-xs text-slate-400">{prescriptions.length} total</span>
                 </div>
                 {prescriptions.length === 0 ? (
-                  <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-12 text-center">
+                  <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-10 text-center">
                     <FileText className="h-10 w-10 mx-auto mb-3 text-slate-200 animate-floaty" />
                     <p className="text-slate-500 text-sm">No prescriptions yet.</p>
                     <p className="text-slate-400 text-xs mt-1">Your doctor will add prescriptions after your appointment.</p>
@@ -270,7 +273,7 @@ const UserDashboard = () => {
 
             {activeTab === 'records' && (
               <div className="space-y-4">
-                <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+                <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 sm:p-6">
                   <h2 className="font-semibold text-slate-900 mb-4">Medical Records</h2>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                     <div>
@@ -290,7 +293,7 @@ const UserDashboard = () => {
                     uploading ? 'border-slate-200 bg-slate-50' : 'border-blue-200 bg-blue-50 hover:bg-blue-100 hover:border-blue-400'
                   }`}>
                     <Upload className={`h-6 w-6 mb-2 ${uploading ? 'text-slate-400 animate-pulse' : 'text-blue-500 animate-floaty'}`} />
-                    <p className="text-sm font-medium text-slate-600">{uploading ? 'Uploading...' : 'Click to upload file'}</p>
+                    <p className="text-sm font-medium text-slate-600">{uploading ? 'Uploading...' : 'Tap to upload file'}</p>
                     <p className="text-xs text-slate-400 mt-1">PDF, JPG, PNG up to 10MB</p>
                     <input type="file" className="hidden" accept=".pdf,.jpg,.jpeg,.png" onChange={handleUpload} disabled={uploading} />
                   </label>
@@ -298,31 +301,31 @@ const UserDashboard = () => {
 
                 {records.length > 0 && (
                   <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-                    <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+                    <div className="px-4 sm:px-6 py-4 border-b border-slate-100 flex items-center justify-between">
                       <h3 className="font-semibold text-slate-900 text-sm">Uploaded Records</h3>
                       <span className="text-xs text-slate-400">{records.length} files</span>
                     </div>
                     <div className="divide-y divide-slate-50">
                       {records.map((record, i) => (
                         <div key={record.id} style={{ animationDelay: `${Math.min(i, 6) * 70}ms` }}
-                          className="animate-fade-up p-4 flex items-center justify-between hover:bg-slate-50 transition-colors">
-                          <div className="flex items-center space-x-3">
-                            <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center">
+                          className="animate-fade-up p-4 flex items-center justify-between gap-3 hover:bg-slate-50 transition-colors">
+                          <div className="flex items-center space-x-3 min-w-0">
+                            <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center flex-shrink-0">
                               <File className="h-5 w-5 text-blue-600" />
                             </div>
-                            <div>
-                              <p className="font-medium text-slate-800 text-sm">{record.file_name}</p>
-                              <div className="flex items-center space-x-2 mt-1">
+                            <div className="min-w-0">
+                              <p className="font-medium text-slate-800 text-sm truncate">{record.file_name}</p>
+                              <div className="flex flex-wrap items-center gap-2 mt-1">
                                 <span className="text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full">{record.category}</span>
                                 <span className="text-xs text-slate-400">{record.file_size}</span>
                               </div>
                             </div>
                           </div>
-                          <div className="flex items-center space-x-2">
-                            <a href={record.file_url} target="_blank" rel="noopener noreferrer"
-                              className="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 hover:scale-110 transition"><Download className="h-4 w-4" /></a>
-                            <button onClick={() => handleDeleteRecord(record.id, record.file_url)}
-                              className="p-2 bg-red-50 text-red-500 rounded-lg hover:bg-red-100 hover:scale-110 transition"><Trash2 className="h-4 w-4" /></button>
+                          <div className="flex items-center gap-2 flex-shrink-0">
+                            <a href={record.file_url} target="_blank" rel="noopener noreferrer" aria-label="Download"
+                              className="p-2.5 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition"><Download className="h-4 w-4" /></a>
+                            <button onClick={() => handleDeleteRecord(record.id, record.file_url)} aria-label="Delete"
+                              className="p-2.5 bg-red-50 text-red-500 rounded-lg hover:bg-red-100 transition"><Trash2 className="h-4 w-4" /></button>
                           </div>
                         </div>
                       ))}
@@ -333,21 +336,21 @@ const UserDashboard = () => {
             )}
 
             {activeTab === 'profile' && (
-              <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+              <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 sm:p-6">
                 <h2 className="font-semibold text-slate-900 mb-6">Profile Information</h2>
                 <div className="space-y-4">
                   {[
                     { label: 'Full Name', type: 'text', value: currentUser?.name, disabled: false },
                     { label: 'Email', type: 'email', value: currentUser?.email, disabled: true },
-                    { label: 'Phone', type: 'text', value: currentUser?.phone, disabled: false },
+                    { label: 'Phone', type: 'tel', value: currentUser?.phone, disabled: false },
                   ].map((field, i) => (
                     <div key={i} className="animate-slide-left" style={{ animationDelay: `${i * 100}ms` }}>
                       <label className="block text-xs font-medium text-slate-600 mb-1.5">{field.label}</label>
                       <input type={field.type} defaultValue={field.value} disabled={field.disabled}
-                        className={`${inputClass} py-3 ${field.disabled ? 'bg-slate-50 text-slate-400' : 'bg-white'}`} />
+                        className={`${inputClass} py-3 ${field.disabled ? 'bg-slate-50 text-slate-400' : ''}`} />
                     </div>
                   ))}
-                  <button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-xl font-medium text-sm transition active:scale-95">
+                  <button className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-medium text-sm transition active:scale-95">
                     Save Changes
                   </button>
                 </div>

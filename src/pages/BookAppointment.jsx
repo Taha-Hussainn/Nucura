@@ -79,11 +79,11 @@ const BookAppointment = () => {
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Doctor Card */}
         <div className="bg-white rounded-2xl border border-slate-100 shadow-lg shadow-blue-900/5 p-5 mb-6 -mt-12 relative z-10 animate-fade-up">
-          <div className="flex items-center space-x-4">
+          <div className="flex flex-wrap items-center gap-4">
             <div className="w-14 h-14 bg-gradient-to-br from-blue-600 to-teal-500 rounded-xl flex items-center justify-center">
               <User className="h-7 w-7 text-white" />
             </div>
-            <div className="flex-1">
+            <div className="flex-1 min-w-[160px]">
               <h2 className="font-bold text-slate-900">{doctor.name}</h2>
               <p className="text-blue-600 text-sm">{doctor.specialization}</p>
               <p className="text-slate-400 text-xs">{doctor.hospital}</p>
@@ -106,7 +106,7 @@ const BookAppointment = () => {
                   {step > s ? <Check className="h-4 w-4" /> : s}
                 </div>
                 {s < 3 && (
-                  <div className="w-20 h-0.5 mx-1 bg-slate-200 overflow-hidden rounded">
+                  <div className="w-10 sm:w-20 h-0.5 mx-1 bg-slate-200 overflow-hidden rounded">
                     <div className="h-full bg-teal-400 transition-all duration-700 ease-out" style={{ width: step > s ? '100%' : '0%' }} />
                   </div>
                 )}
@@ -118,7 +118,7 @@ const BookAppointment = () => {
         {/* key forces the transition to replay on each step */}
         <div key={step} className="animate-fade-up">
           {step === 1 && (
-            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 sm:p-6">
               <h2 className="font-bold text-slate-900 mb-5">Patient Information</h2>
               <div className="space-y-4">
                 <div className="relative">
@@ -162,7 +162,7 @@ const BookAppointment = () => {
                 <div>
                   <label className="block text-xs font-medium text-slate-600 mb-2">Available Time Slots</label>
                   {doctor.slots?.length > 0 ? (
-                    <div className="grid grid-cols-3 gap-2">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                       {doctor.slots.map((slot, i) => (
                         <button key={slot} onClick={() => setFormData({ ...formData, timeSlot: slot })}
                           style={{ animationDelay: `${i * 50}ms` }}
