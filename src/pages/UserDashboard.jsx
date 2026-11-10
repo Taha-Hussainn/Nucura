@@ -3,34 +3,50 @@ import { Calendar, Clock, User, LogOut, Plus, Trash2, MessageCircle, FileText, U
 import { Link, useNavigate } from 'react-router-dom'
 import { getAppointmentsByUser, updateAppointmentStatus, deleteAppointment } from '../api/appointments'
 import { getCurrentUser } from '../api/auth'
+import { updateUserProfile } from '../api/users'
 import { useAuth } from '../context/AuthContext'
 import { getChatsByPatient } from '../api/chat'
 import ChatWindow from '../components/ChatWindow'
 import { getPrescriptionsByPatient } from '../api/prescriptions'
 import PrescriptionCard from '../components/PrescriptionCard'
-import { uploadMedicalRecord, getMedicalRecordsByPatient, deleteMedicalRecord } from '../api/medicalRecords'
+import { uploadMedicalRecord, getMedicalRecordsByPatient, deleteMedicalRecord, getRecordUrl } from '../api/medicalRecords'
 import Reveal from '../components/Reveal'
 import CountUp from '../components/CountUp'
 import MobileTabs from '../components/MobileTabs'
+
+const BLOOD_GROUPS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']
+const GENDERS = ['Male', 'Female', 'Other', 'Prefer not to say']
+
+const toProfile = (u) => ({
+  name: u?.name || '', phone: u?.phone || '', address: u?.address || '',
+  date_of_birth: u?.date_of_birth || '', gender: u?.gender || '', blood_group: u?.blood_group || '',
+  allergies: u?.allergies || '', chronic_conditions: u?.chronic_conditions || '',
+  emergency_contact_name: u?.emergency_contact_name || '', emergency_contact_phone: u?.emergency_contact_phone || ''
+})
 
 const UserDashboard = () => {
   const [activeTab, setActiveTab] = useState('appointments')
   const [appointments, setAppointments] = useState([])
   const [loading, setLoading] = useState(true)
   const [currentUser, setCurrentUser] = useState(null)
+  const [profile, setProfile] = useState(toProfile(null))
+  const [profileMsg, setProfileMsg] = useState({ type: '', text: '' })
+  const [savingProfile, setSavingProfile] = useState(false)
   const [chats, setChats] = useState([])
   const [activeChat, setActiveChat] = useState(null)
   const [prescriptions, setPrescriptions] = useState([])
   const [records, setRecords] = useState([])
   const [uploading, setUploading] = useState(false)
+  const [uploadMsg, setUploadMsg] = useState('')
   const [uploadForm, setUploadForm] = useState({ category: 'Lab Report', description: '' })
-  const { logout } = useAuth()
+  const { logout, setCurrentUser: setAuthUser } = useAuth()
   const navigate = useNavigate()
 
   useEffect(() => {
     getCurrentUser().then(user => {
       if (!user) { navigate('/login'); return }
       setCurrentUser(user)
+      setProfile(toProfile(user))
       getAppointmentsByUser(user.id).then(r => { if (r.success) setAppointments(r.data); setLoading(false) })
       getChatsByPatient(user.id).then(r => { if (r.success) setChats(r.data) })
       getPrescriptionsByPatient(user.id).then(r => { if (r.success) setPrescriptions(r.data) })
@@ -52,26 +68,51 @@ const UserDashboard = () => {
 
   const handleLogout = async () => { await logout(); navigate('/login') }
 
-  const handleUpload = async (e) => {
-    const file = e.target.files[0]
-    if (!file) return
-    setUploading(true)
-    const result = await uploadMedicalRecord(currentUser.id, currentUser.name, file, uploadForm.category, uploadForm.description)
-    if (result.success) { setRecords(prev => [result.data, ...prev]); alert('File uploaded successfully!') }
-    else alert('Upload failed: ' + result.error)
-    setUploading(false)
-    e.target.value = ''
+  const handleSaveProfile = async () => {
+    setSavingProfile(true)
+    setProfileMsg({ type: '', text: '' })
+    const result = await updateUserProfile(currentUser.id, profile)
+    setSavingProfile(false)
+    if (result.success) {
+      const updated = { ...currentUser, ...result.data, userType: currentUser.userType }
+      setCurrentUser(updated)
+      setAuthUser(updated)
+      setProfileMsg({ type: 'ok', text: 'Profile saved.' })
+    } else {
+      setProfileMsg({ type: 'err', text: 'Could not save: ' + result.error })
+    }
   }
 
-  const handleDeleteRecord = async (id, fileUrl) => {
+  const handleUpload = async (e) => {
+    const file = e.target.files[0]
+    e.target.value = ''
+    if (!file) return
+    setUploading(true)
+    setUploadMsg('')
+    const result = await uploadMedicalRecord(currentUser.id, currentUser.name, file, uploadForm.category, uploadForm.description)
+    if (result.success) { setRecords(prev => [result.data, ...prev]); setUploadMsg('File uploaded.') }
+    else setUploadMsg(result.error)
+    setUploading(false)
+  }
+
+  // Open the tab first (popup blockers), then fill in the short-lived signed link
+  const handleOpenRecord = async (record) => {
+    const win = window.open('', '_blank')
+    const url = await getRecordUrl(record.file_path)
+    if (url && win) win.location.href = url
+    else { if (win) win.close(); setUploadMsg('Could not open this file.') }
+  }
+
+  const handleDeleteRecord = async (record) => {
     if (!window.confirm('Delete this record?')) return
-    const result = await deleteMedicalRecord(id, fileUrl)
-    if (result.success) setRecords(prev => prev.filter(r => r.id !== id))
+    const result = await deleteMedicalRecord(record.id, record.file_path)
+    if (result.success) setRecords(prev => prev.filter(r => r.id !== record.id))
   }
 
   const statusColor = (status) => {
     if (status === 'confirmed') return 'bg-teal-50 text-teal-700 border border-teal-200'
     if (status === 'pending') return 'bg-amber-50 text-amber-700 border border-amber-200'
+    if (status === 'completed') return 'bg-blue-50 text-blue-700 border border-blue-200'
     if (status === 'cancelled') return 'bg-red-50 text-red-700 border border-red-200'
     return 'bg-slate-100 text-slate-600'
   }
@@ -91,11 +132,11 @@ const UserDashboard = () => {
     { label: 'Records', value: records.length, color: 'bg-indigo-50 text-indigo-600', icon: <Upload className="h-5 w-5" /> },
   ]
 
-  const inputClass = "w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white"
+  const inputClass = "w-full border border-slate-200 rounded-xl px-3 py-3 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white"
+  const setField = (key) => (e) => setProfile({ ...profile, [key]: e.target.value })
 
   return (
     <div className="min-h-screen bg-slate-50">
-      {/* Banner */}
       <div className="relative overflow-hidden bg-gradient-to-r from-blue-700 via-teal-600 to-blue-700 animate-gradient py-6 sm:py-8">
         <div className="absolute -top-16 -right-10 w-64 h-64 bg-white/10 rounded-full blur-3xl animate-pulse" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -111,7 +152,6 @@ const UserDashboard = () => {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-        {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8 -mt-12 sm:-mt-14 relative z-10">
           {stats.map((s, i) => (
             <Reveal key={s.label} delay={i * 100} variant="scale">
@@ -124,11 +164,9 @@ const UserDashboard = () => {
           ))}
         </div>
 
-        {/* Mobile tab bar */}
         <MobileTabs items={navItems} active={activeTab} onChange={setActiveTab} />
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Sidebar (desktop only) */}
           <div className="hidden lg:block lg:col-span-1 animate-slide-left">
             <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
               <div className="flex items-center space-x-3 mb-6 pb-6 border-b border-slate-100">
@@ -163,7 +201,6 @@ const UserDashboard = () => {
             </div>
           </div>
 
-          {/* Main */}
           <div key={activeTab} className="lg:col-span-3 min-w-0 animate-fade-up">
             {activeTab === 'appointments' && (
               <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
@@ -199,7 +236,7 @@ const UserDashboard = () => {
                           </div>
                         </div>
                         <div className="flex justify-end gap-2 mt-3">
-                          {apt.status === 'pending' && (
+                          {(apt.status === 'pending' || apt.status === 'confirmed') && (
                             <button onClick={() => handleCancel(apt.id)}
                               className="px-4 py-2 bg-red-50 text-red-600 border border-red-200 rounded-lg hover:bg-red-100 text-xs font-medium active:scale-95 transition">
                               Cancel
@@ -274,7 +311,8 @@ const UserDashboard = () => {
             {activeTab === 'records' && (
               <div className="space-y-4">
                 <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 sm:p-6">
-                  <h2 className="font-semibold text-slate-900 mb-4">Medical Records</h2>
+                  <h2 className="font-semibold text-slate-900 mb-1">Medical Records</h2>
+                  <p className="text-xs text-slate-400 mb-4">Private to you. Files are stored securely and opened with temporary links.</p>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                     <div>
                       <label className="block text-xs font-medium text-slate-600 mb-1.5">Category</label>
@@ -297,6 +335,7 @@ const UserDashboard = () => {
                     <p className="text-xs text-slate-400 mt-1">PDF, JPG, PNG up to 10MB</p>
                     <input type="file" className="hidden" accept=".pdf,.jpg,.jpeg,.png" onChange={handleUpload} disabled={uploading} />
                   </label>
+                  {uploadMsg && <p className="mt-3 text-xs text-blue-700 bg-blue-50 border border-blue-100 rounded-lg px-3 py-2">{uploadMsg}</p>}
                 </div>
 
                 {records.length > 0 && (
@@ -322,9 +361,9 @@ const UserDashboard = () => {
                             </div>
                           </div>
                           <div className="flex items-center gap-2 flex-shrink-0">
-                            <a href={record.file_url} target="_blank" rel="noopener noreferrer" aria-label="Download"
-                              className="p-2.5 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition"><Download className="h-4 w-4" /></a>
-                            <button onClick={() => handleDeleteRecord(record.id, record.file_url)} aria-label="Delete"
+                            <button onClick={() => handleOpenRecord(record)} aria-label="Open"
+                              className="p-2.5 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition"><Download className="h-4 w-4" /></button>
+                            <button onClick={() => handleDeleteRecord(record)} aria-label="Delete"
                               className="p-2.5 bg-red-50 text-red-500 rounded-lg hover:bg-red-100 transition"><Trash2 className="h-4 w-4" /></button>
                           </div>
                         </div>
@@ -337,23 +376,75 @@ const UserDashboard = () => {
 
             {activeTab === 'profile' && (
               <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 sm:p-6">
-                <h2 className="font-semibold text-slate-900 mb-6">Profile Information</h2>
-                <div className="space-y-4">
-                  {[
-                    { label: 'Full Name', type: 'text', value: currentUser?.name, disabled: false },
-                    { label: 'Email', type: 'email', value: currentUser?.email, disabled: true },
-                    { label: 'Phone', type: 'tel', value: currentUser?.phone, disabled: false },
-                  ].map((field, i) => (
-                    <div key={i} className="animate-slide-left" style={{ animationDelay: `${i * 100}ms` }}>
-                      <label className="block text-xs font-medium text-slate-600 mb-1.5">{field.label}</label>
-                      <input type={field.type} defaultValue={field.value} disabled={field.disabled}
-                        className={`${inputClass} py-3 ${field.disabled ? 'bg-slate-50 text-slate-400' : ''}`} />
-                    </div>
-                  ))}
-                  <button className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-medium text-sm transition active:scale-95">
-                    Save Changes
-                  </button>
+                <h2 className="font-semibold text-slate-900 mb-1">Profile & Health Information</h2>
+                <p className="text-xs text-slate-400 mb-5">This helps doctors treat you safely. It is only visible to you.</p>
+
+                {profileMsg.text && (
+                  <div className={`mb-4 px-4 py-3 rounded-xl text-sm border animate-scale-in ${
+                    profileMsg.type === 'ok' ? 'bg-teal-50 border-teal-200 text-teal-700' : 'bg-red-50 border-red-200 text-red-600'
+                  }`}>{profileMsg.text}</div>
+                )}
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-medium text-slate-600 mb-1.5">Full Name</label>
+                    <input type="text" className={inputClass} value={profile.name} onChange={setField('name')} />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-slate-600 mb-1.5">Email</label>
+                    <input type="email" disabled value={currentUser?.email || ''} className={`${inputClass} bg-slate-50 text-slate-400`} />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-slate-600 mb-1.5">Phone</label>
+                    <input type="tel" className={inputClass} value={profile.phone} onChange={setField('phone')} />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-slate-600 mb-1.5">Date of Birth</label>
+                    <input type="date" max={new Date().toISOString().split('T')[0]} className={inputClass}
+                      value={profile.date_of_birth} onChange={setField('date_of_birth')} />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-slate-600 mb-1.5">Gender</label>
+                    <select className={inputClass} value={profile.gender} onChange={setField('gender')}>
+                      <option value="">Select</option>
+                      {GENDERS.map(g => <option key={g}>{g}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-slate-600 mb-1.5">Blood Group</label>
+                    <select className={inputClass} value={profile.blood_group} onChange={setField('blood_group')}>
+                      <option value="">Select</option>
+                      {BLOOD_GROUPS.map(b => <option key={b}>{b}</option>)}
+                    </select>
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-xs font-medium text-slate-600 mb-1.5">Address</label>
+                    <input type="text" className={inputClass} value={profile.address} onChange={setField('address')} />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-xs font-medium text-slate-600 mb-1.5">Allergies</label>
+                    <textarea placeholder="e.g. Penicillin, peanuts. Write 'None' if you have none."
+                      className={`${inputClass} h-20 resize-none`} value={profile.allergies} onChange={setField('allergies')} />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-xs font-medium text-slate-600 mb-1.5">Long-term conditions</label>
+                    <textarea placeholder="e.g. Diabetes, hypertension, asthma"
+                      className={`${inputClass} h-20 resize-none`} value={profile.chronic_conditions} onChange={setField('chronic_conditions')} />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-slate-600 mb-1.5">Emergency Contact Name</label>
+                    <input type="text" className={inputClass} value={profile.emergency_contact_name} onChange={setField('emergency_contact_name')} />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-slate-600 mb-1.5">Emergency Contact Phone</label>
+                    <input type="tel" className={inputClass} value={profile.emergency_contact_phone} onChange={setField('emergency_contact_phone')} />
+                  </div>
                 </div>
+
+                <button onClick={handleSaveProfile} disabled={savingProfile}
+                  className="mt-5 w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-xl font-medium text-sm transition active:scale-95 disabled:opacity-50">
+                  {savingProfile ? 'Saving...' : 'Save Changes'}
+                </button>
               </div>
             )}
           </div>

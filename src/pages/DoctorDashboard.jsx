@@ -1,8 +1,9 @@
 import { useState, useEffect, useMemo } from 'react'
-import { Calendar, Settings, LogOut, CheckCircle, XCircle, Filter, MessageCircle, FileText } from 'lucide-react'
+import { Calendar, Settings, LogOut, CheckCircle, XCircle, Filter, MessageCircle, FileText, ShieldAlert, Clock } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { getAppointmentsByDoctor, updateAppointmentStatus } from '../api/appointments'
 import { getCurrentUser } from '../api/auth'
+import { resubmitForReview } from '../api/doctors'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../supabase/client'
 import { getChatsByDoctor } from '../api/chat'
@@ -18,6 +19,7 @@ import { specializations, pakistaniCities } from '../data/specializations'
 const profileFields = [
   { label: 'Full Name', key: 'name', kind: 'text', type: 'text' },
   { label: 'Specialization', key: 'specialization', kind: 'specialization' },
+  { label: 'PMDC Registration No.', key: 'pmdc_number', kind: 'text', type: 'text', placeholder: 'e.g. 12345-S' },
   { label: 'Experience (years)', key: 'experience', kind: 'text', type: 'number' },
   { label: 'Consultation Fee (Rs.)', key: 'fee', kind: 'text', type: 'number' },
   { label: 'Phone', key: 'phone', kind: 'text', type: 'tel' },
@@ -28,12 +30,16 @@ const profileFields = [
   { label: 'Time Slots (comma separated)', key: 'slots', kind: 'text', type: 'text', placeholder: '09:00 AM, 10:30 AM' },
 ]
 
+const WEEKDAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+
 const DoctorDashboard = () => {
   const [activeTab, setActiveTab] = useState('appointments')
   const [appointments, setAppointments] = useState([])
   const [currentUser, setCurrentUser] = useState(null)
+  const [doctorRow, setDoctorRow] = useState(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [message, setMessage] = useState('')
   const [filter, setFilter] = useState('all')
   const [chats, setChats] = useState([])
   const [activeChat, setActiveChat] = useState(null)
@@ -41,27 +47,31 @@ const DoctorDashboard = () => {
   const [showPrescriptionModal, setShowPrescriptionModal] = useState(false)
   const [selectedAppointment, setSelectedAppointment] = useState(null)
   const [profileData, setProfileData] = useState({
-    name: '', specialization: '', experience: '', fee: '',
+    name: '', specialization: '', pmdc_number: '', experience: '', fee: '',
     phone: '', hospital: '', clinic: '', location: '',
-    description: '', available_time: '', slots: ''
+    description: '', available_time: '', slots: '', available_days: []
   })
   const { logout } = useAuth()
   const navigate = useNavigate()
+
+  const loadDoctorRow = (data) => {
+    setDoctorRow(data)
+    setProfileData({
+      name: data.name || '', specialization: data.specialization || '',
+      pmdc_number: data.pmdc_number || '',
+      experience: data.experience || '', fee: data.fee || '',
+      phone: data.contact?.phone || '', hospital: data.hospital || '',
+      clinic: data.clinic || '', location: data.location || '',
+      description: data.description || '', available_time: data.available_time || '',
+      slots: data.slots?.join(', ') || '', available_days: data.available_days || []
+    })
+  }
 
   useEffect(() => {
     getCurrentUser().then(user => {
       if (!user) { navigate('/login'); return }
       setCurrentUser(user)
-      supabase.from('doctors').select('*').eq('id', user.id).single().then(({ data }) => {
-        if (data) setProfileData({
-          name: data.name || '', specialization: data.specialization || '',
-          experience: data.experience || '', fee: data.fee || '',
-          phone: data.contact?.phone || '', hospital: data.hospital || '',
-          clinic: data.clinic || '', location: data.location || '',
-          description: data.description || '', available_time: data.available_time || '',
-          slots: data.slots?.join(', ') || ''
-        })
-      })
+      supabase.from('doctors').select('*').eq('id', user.id).single().then(({ data }) => { if (data) loadDoctorRow(data) })
       getAppointmentsByDoctor(user.id).then(r => { if (r.success) setAppointments(r.data); setLoading(false) })
       getChatsByDoctor(user.id).then(r => { if (r.success) setChats(r.data) })
       getPrescriptionsByDoctor(user.id).then(r => { if (r.success) setPrescriptions(r.data) })
@@ -72,7 +82,6 @@ const DoctorDashboard = () => {
     () => [...new Set([...specializations, profileData.specialization].filter(Boolean))].sort((a, b) => a.localeCompare(b)),
     [profileData.specialization]
   )
-
   const currentCity = (profileData.location || '').split(',')[0].trim()
   const cityOptions = useMemo(
     () => [...new Set([...pakistaniCities, currentCity].filter(Boolean))].sort((a, b) => a.localeCompare(b)),
@@ -81,38 +90,50 @@ const DoctorDashboard = () => {
 
   const handleSaveProfile = async () => {
     setSaving(true)
+    setMessage('')
     const slotsArray = profileData.slots ? profileData.slots.split(',').map(s => s.trim()).filter(Boolean) : []
-    await supabase.from('doctors').update({
+    const { data, error } = await supabase.from('doctors').update({
       name: profileData.name, specialization: profileData.specialization,
+      pmdc_number: profileData.pmdc_number.trim() || null,
       experience: parseInt(profileData.experience) || 0, fee: parseInt(profileData.fee) || 0,
       hospital: profileData.hospital, clinic: profileData.clinic, location: profileData.location,
-      description: profileData.description, available_time: profileData.available_time, slots: slotsArray,
+      description: profileData.description, available_time: profileData.available_time,
+      slots: slotsArray, available_days: profileData.available_days,
       contact: { phone: profileData.phone, email: currentUser.email, website: '' }
-    }).eq('id', currentUser.id)
+    }).eq('id', currentUser.id).select().single()
+
+    if (error) { setMessage('Could not save: ' + error.message); setSaving(false); return }
     await supabase.from('users').update({ name: profileData.name, specialization: profileData.specialization, phone: profileData.phone }).eq('id', currentUser.id)
+    loadDoctorRow(data)
+    setMessage(data.verification_status === 'pending' && doctorRow?.verification_status === 'approved'
+      ? 'Saved. Because your PMDC number changed, your profile is back in review.'
+      : 'Profile saved.')
     setSaving(false)
-    alert('Profile updated!')
   }
 
-  const handleApprove = async (id) => {
-    const r = await updateAppointmentStatus(id, 'confirmed')
-    if (r.success) setAppointments(prev => prev.map(a => a.id === id ? { ...a, status: 'confirmed' } : a))
+  const handleResubmit = async () => {
+    const result = await resubmitForReview(currentUser.id)
+    if (result.success) loadDoctorRow(result.data)
+    else setMessage(result.error)
   }
 
-  const handleReject = async (id) => {
-    const r = await updateAppointmentStatus(id, 'cancelled')
-    if (r.success) setAppointments(prev => prev.map(a => a.id === id ? { ...a, status: 'cancelled' } : a))
+  const setStatus = async (id, status) => {
+    const r = await updateAppointmentStatus(id, status)
+    if (r.success) setAppointments(prev => prev.map(a => a.id === id ? { ...a, status } : a))
   }
 
   const handleLogout = async () => { await logout(); navigate('/login') }
 
+  const toggleDay = (day) =>
+    setProfileData(p => ({ ...p, available_days: p.available_days.includes(day) ? p.available_days.filter(d => d !== day) : [...p.available_days, day] }))
+
   const filteredAppointments = filter === 'all' ? appointments : appointments.filter(a => a.status === filter)
   const today = new Date().toISOString().split('T')[0]
   const stats = {
-    totalAppointments: appointments.length,
-    todayAppointments: appointments.filter(a => a.date === today).length,
-    pendingApprovals: appointments.filter(a => a.status === 'pending').length,
-    totalEarnings: appointments.filter(a => a.status === 'confirmed').reduce((sum, a) => sum + (a.fee || 0), 0)
+    total: appointments.length,
+    today: appointments.filter(a => a.date === today && a.status !== 'cancelled').length,
+    pending: appointments.filter(a => a.status === 'pending').length,
+    completed: appointments.filter(a => a.status === 'completed').length
   }
 
   const inputClass = "w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white"
@@ -125,7 +146,7 @@ const DoctorDashboard = () => {
   ]
 
   const renderField = (field, i) => (
-    <div key={field.key} className="animate-slide-left" style={{ animationDelay: `${i * 50}ms` }}>
+    <div key={field.key} className="animate-slide-left" style={{ animationDelay: `${i * 40}ms` }}>
       <label className="block text-xs font-medium text-slate-600 mb-1.5">{field.label}</label>
       {field.kind === 'specialization' ? (
         <select className={inputClass} value={profileData.specialization}
@@ -146,8 +167,13 @@ const DoctorDashboard = () => {
           onChange={(e) => setProfileData({ ...profileData, [field.key]: e.target.value })}
           className={inputClass} />
       )}
+      {field.key === 'pmdc_number' && doctorRow?.verification_status === 'approved' && (
+        <p className="text-xs text-amber-600 mt-1">Changing this sends your profile back for review.</p>
+      )}
     </div>
   )
+
+  const status = doctorRow?.verification_status
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -166,21 +192,50 @@ const DoctorDashboard = () => {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8 -mt-12 sm:-mt-14 relative z-10">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-6 -mt-12 sm:-mt-14 relative z-10">
           {[
-            { label: 'Total Appointments', node: <CountUp value={stats.totalAppointments} /> },
-            { label: "Today's", node: <CountUp value={stats.todayAppointments} /> },
-            { label: 'Pending', node: <CountUp value={stats.pendingApprovals} /> },
-            { label: 'Earnings', node: <CountUp value={stats.totalEarnings} prefix="Rs. " /> }
+            { label: 'Total Appointments', value: stats.total },
+            { label: "Today's", value: stats.today },
+            { label: 'Pending Requests', value: stats.pending },
+            { label: 'Completed', value: stats.completed }
           ].map((s, i) => (
             <Reveal key={s.label} delay={i * 100} variant="scale">
               <div className="bg-white rounded-2xl border border-slate-100 shadow-lg shadow-blue-900/5 p-4 sm:p-5 card-lift">
                 <p className="text-xs text-slate-500 mb-1">{s.label}</p>
-                <p className="text-xl sm:text-2xl font-bold text-slate-900 break-words">{s.node}</p>
+                <p className="text-xl sm:text-2xl font-bold text-slate-900"><CountUp value={s.value} /></p>
               </div>
             </Reveal>
           ))}
         </div>
+
+        {/* Verification status banner */}
+        {doctorRow && status !== 'approved' && (
+          <div className={`mb-6 rounded-2xl border p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center gap-4 animate-scale-in ${
+            status === 'pending' ? 'bg-amber-50 border-amber-200' : 'bg-red-50 border-red-200'
+          }`}>
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${status === 'pending' ? 'bg-amber-100 text-amber-600' : 'bg-red-100 text-red-600'}`}>
+              {status === 'pending' ? <Clock className="h-5 w-5" /> : <ShieldAlert className="h-5 w-5" />}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className={`font-semibold text-sm ${status === 'pending' ? 'text-amber-800' : 'text-red-800'}`}>
+                {status === 'pending' && 'Your profile is under review'}
+                {status === 'rejected' && 'Your profile was not approved'}
+                {status === 'suspended' && 'Your listing is suspended'}
+              </p>
+              <p className={`text-xs mt-1 ${status === 'pending' ? 'text-amber-700' : 'text-red-700'}`}>
+                {status === 'pending' && "Patients can't find or book you until an admin approves your profile. Complete My Profile, including your PMDC number."}
+                {status === 'rejected' && `Reason: ${doctorRow.rejection_reason || 'not given'}. Update your details in My Profile, then resubmit.`}
+                {status === 'suspended' && `${doctorRow.rejection_reason ? `Reason: ${doctorRow.rejection_reason}. ` : ''}Contact support@nucura.com.`}
+              </p>
+            </div>
+            {status === 'rejected' && (
+              <button onClick={handleResubmit}
+                className="px-4 py-2.5 bg-red-600 text-white rounded-lg text-xs font-medium hover:bg-red-700 active:scale-95 transition">
+                Resubmit for review
+              </button>
+            )}
+          </div>
+        )}
 
         <MobileTabs items={navItems} active={activeTab} onChange={setActiveTab} />
 
@@ -193,7 +248,7 @@ const DoctorDashboard = () => {
                 </div>
                 <div className="min-w-0">
                   <h3 className="font-semibold text-slate-900 text-sm truncate">{currentUser?.name || 'Doctor'}</h3>
-                  <p className="text-blue-600 text-xs truncate">{currentUser?.specialization || 'Doctor'}</p>
+                  <p className="text-blue-600 text-xs truncate">{profileData.specialization || 'Doctor'}</p>
                 </div>
               </div>
               <nav className="space-y-1">
@@ -230,6 +285,7 @@ const DoctorDashboard = () => {
                       <option value="all">All</option>
                       <option value="pending">Pending</option>
                       <option value="confirmed">Confirmed</option>
+                      <option value="completed">Completed</option>
                       <option value="cancelled">Cancelled</option>
                     </select>
                   </div>
@@ -264,11 +320,11 @@ const DoctorDashboard = () => {
                             <div className="mt-2">
                               {apt.status === 'pending' ? (
                                 <div className="flex gap-2 sm:justify-end">
-                                  <button onClick={() => handleApprove(apt.id)}
+                                  <button onClick={() => setStatus(apt.id, 'confirmed')}
                                     className="flex-1 sm:flex-none px-4 py-2.5 bg-teal-600 text-white rounded-lg text-xs flex items-center justify-center hover:bg-teal-700 active:scale-95 transition">
                                     <CheckCircle className="h-3 w-3 mr-1" />Approve
                                   </button>
-                                  <button onClick={() => handleReject(apt.id)}
+                                  <button onClick={() => setStatus(apt.id, 'cancelled')}
                                     className="flex-1 sm:flex-none px-4 py-2.5 bg-red-500 text-white rounded-lg text-xs flex items-center justify-center hover:bg-red-600 active:scale-95 transition">
                                     <XCircle className="h-3 w-3 mr-1" />Reject
                                   </button>
@@ -276,19 +332,27 @@ const DoctorDashboard = () => {
                               ) : (
                                 <span className={`inline-block px-2.5 py-1 rounded-lg text-xs font-medium capitalize ${
                                   apt.status === 'confirmed' ? 'bg-teal-50 text-teal-700 border border-teal-200' :
-                                  apt.status === 'cancelled' ? 'bg-red-50 text-red-600 border border-red-200' :
-                                  'bg-amber-50 text-amber-700 border border-amber-200'
+                                  apt.status === 'completed' ? 'bg-blue-50 text-blue-700 border border-blue-200' :
+                                  'bg-red-50 text-red-600 border border-red-200'
                                 }`}>{apt.status}</span>
                               )}
                             </div>
                           </div>
                         </div>
-                        <div className="mt-3 flex justify-end">
-                          <button onClick={() => { setSelectedAppointment(apt); setShowPrescriptionModal(true) }}
-                            className="w-full sm:w-auto px-4 py-2.5 bg-blue-50 text-blue-600 border border-blue-200 rounded-lg text-xs font-medium flex items-center justify-center hover:bg-blue-100 active:scale-95 transition">
-                            <FileText className="h-3 w-3 mr-1.5" />Write Prescription
-                          </button>
-                        </div>
+                        {(apt.status === 'confirmed' || apt.status === 'completed') && (
+                          <div className="mt-3 flex flex-col sm:flex-row sm:justify-end gap-2">
+                            {apt.status === 'confirmed' && (
+                              <button onClick={() => setStatus(apt.id, 'completed')}
+                                className="px-4 py-2.5 bg-white text-teal-700 border border-teal-200 rounded-lg text-xs font-medium flex items-center justify-center hover:bg-teal-50 active:scale-95 transition">
+                                <CheckCircle className="h-3 w-3 mr-1.5" />Mark completed
+                              </button>
+                            )}
+                            <button onClick={() => { setSelectedAppointment(apt); setShowPrescriptionModal(true) }}
+                              className="px-4 py-2.5 bg-blue-50 text-blue-600 border border-blue-200 rounded-lg text-xs font-medium flex items-center justify-center hover:bg-blue-100 active:scale-95 transition">
+                              <FileText className="h-3 w-3 mr-1.5" />Write Prescription
+                            </button>
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -339,7 +403,7 @@ const DoctorDashboard = () => {
                   <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-10 text-center">
                     <FileText className="h-10 w-10 mx-auto mb-3 text-slate-200 animate-floaty" />
                     <p className="text-slate-400 text-sm">No prescriptions yet.</p>
-                    <p className="text-slate-300 text-xs mt-1">Write a prescription from the Appointments tab.</p>
+                    <p className="text-slate-300 text-xs mt-1">Write a prescription from a confirmed appointment.</p>
                   </div>
                 ) : prescriptions.map((p, i) => (
                   <div key={p.id} className="animate-fade-up" style={{ animationDelay: `${Math.min(i, 5) * 100}ms` }}>
@@ -353,9 +417,25 @@ const DoctorDashboard = () => {
               <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 sm:p-6">
                 <h2 className="font-semibold text-slate-900 mb-1">Complete Your Profile</h2>
                 <p className="text-slate-400 text-xs mb-5">Fill in your details so patients can find and book you.</p>
+
+                {message && <div className="mb-4 bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded-xl text-sm animate-scale-in">{message}</div>}
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {profileFields.map(renderField)}
                 </div>
+
+                <div className="mt-4">
+                  <label className="block text-xs font-medium text-slate-600 mb-2">Days you see patients</label>
+                  <div className="flex flex-wrap gap-2">
+                    {WEEKDAYS.map(day => (
+                      <button key={day} type="button" onClick={() => toggleDay(day)}
+                        className={`px-3 py-2 rounded-lg text-xs font-medium border transition active:scale-95 ${
+                          profileData.available_days.includes(day) ? 'bg-teal-600 text-white border-teal-600' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+                        }`}>{day.slice(0, 3)}</button>
+                    ))}
+                  </div>
+                </div>
+
                 <div className="mt-4">
                   <label className="block text-xs font-medium text-slate-600 mb-1.5">Description</label>
                   <textarea value={profileData.description}

@@ -1,9 +1,9 @@
-import { specializations } from "../data/specializations";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Mail, Lock, User, Stethoscope, Phone, MapPin } from "lucide-react";
+import { Mail, Lock, User, Stethoscope, Phone, MapPin, BadgeCheck, CheckCircle } from "lucide-react";
 import { signUp } from "../api/auth";
 import { useAuth } from "../context/AuthContext";
+import { specializations } from "../data/specializations";
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -11,9 +11,10 @@ const Signup = () => {
   const [userType, setUserType] = useState("patient");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [needsConfirmation, setNeedsConfirmation] = useState(false);
   const [formData, setFormData] = useState({
     name: "", email: "", password: "", confirmPassword: "",
-    phone: "", address: "", specialization: "", experience: ""
+    phone: "", address: "", specialization: "", experience: "", pmdcNumber: ""
   });
 
   const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -22,18 +23,20 @@ const Signup = () => {
     e.preventDefault();
     setError("");
     if (formData.password !== formData.confirmPassword) { setError("Passwords do not match"); return; }
-    if (formData.password.length < 6) { setError("Password must be at least 6 characters"); return; }
+    if (formData.password.length < 8) { setError("Password must be at least 8 characters"); return; }
+    if (userType === "doctor" && !formData.pmdcNumber.trim()) { setError("PMDC registration number is required for doctors"); return; }
+
     setLoading(true);
     try {
-      const result = await signUp(formData.email, formData.password, {
-        name: formData.name, userType, phone: formData.phone,
-        address: formData.address, specialization: formData.specialization, experience: formData.experience
+      const result = await signUp(formData.email.trim(), formData.password, {
+        name: formData.name.trim(), userType, phone: formData.phone, address: formData.address,
+        specialization: formData.specialization, experience: formData.experience,
+        pmdcNumber: formData.pmdcNumber.trim()
       });
       if (!result.success) { setError(result.error); setLoading(false); return; }
+      if (result.needsConfirmation) { setNeedsConfirmation(true); setLoading(false); return; }
       setCurrentUser(result.user);
-      if (userType === "patient") navigate("/dashboard");
-      else if (userType === "doctor") navigate("/doctor-dashboard");
-      else navigate("/admin-dashboard");
+      navigate(userType === "doctor" ? "/doctor-dashboard" : "/dashboard");
     } catch (err) {
       setError("Something went wrong. Please try again.");
     }
@@ -45,7 +48,7 @@ const Signup = () => {
   const fields = [
     { name: 'name', type: 'text', placeholder: 'Full name', icon: <User className="h-4 w-4" />, required: true },
     { name: 'email', type: 'email', placeholder: 'Email address', icon: <Mail className="h-4 w-4" />, required: true },
-    { name: 'phone', type: 'text', placeholder: 'Phone number', icon: <Phone className="h-4 w-4" />, required: false },
+    { name: 'phone', type: 'tel', placeholder: 'Phone number', icon: <Phone className="h-4 w-4" />, required: false },
     { name: 'address', type: 'text', placeholder: 'Address', icon: <MapPin className="h-4 w-4" />, required: false },
   ];
 
@@ -81,80 +84,100 @@ const Signup = () => {
         <p className="relative text-blue-200 text-sm">© {new Date().getFullYear()} Nucura. All rights reserved.</p>
       </div>
 
-      <div className="flex-1 flex items-center justify-center p-8 overflow-y-auto">
+      <div className="flex-1 flex items-center justify-center p-6 sm:p-8 overflow-y-auto">
         <div className="w-full max-w-md py-8">
           <div className="lg:hidden flex items-center space-x-2 mb-8 animate-fade-in">
             <img src="/logo.png" alt="Nucura" className="h-8 w-8 object-contain" style={{ mixBlendMode: 'multiply' }} />
             <span className="text-xl font-bold text-blue-700">Nucura</span>
           </div>
 
-          <h2 className="text-2xl font-bold text-slate-900 mb-1 animate-slide-right">Create your account</h2>
-          <p className="text-slate-500 text-sm mb-8 animate-slide-right" style={{ animationDelay: '100ms' }}>Join Nucura, it's free</p>
-
-          <div className="flex rounded-xl border border-slate-200 mb-6 bg-slate-100 p-1 gap-1 animate-slide-right" style={{ animationDelay: '200ms' }}>
-            {[
-              { key: 'patient', label: 'Patient', icon: <User className="h-4 w-4 mr-1.5" /> },
-              { key: 'doctor', label: 'Doctor', icon: <Stethoscope className="h-4 w-4 mr-1.5" /> }
-            ].map(t => (
-              <button key={t.key} type="button" onClick={() => setUserType(t.key)}
-                className={`flex-1 flex items-center justify-center py-2 px-3 rounded-lg text-sm font-medium transition-all duration-300 ${
-                  userType === t.key ? 'bg-white text-blue-700 shadow-sm scale-[1.02]' : 'text-slate-500 hover:text-slate-700'
-                }`}>
-                {t.icon}{t.label}
-              </button>
-            ))}
-          </div>
-
-          {error && <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl text-sm mb-4 animate-scale-in">{error}</div>}
-
-          <form onSubmit={handleSubmit} className="space-y-3">
-            {fields.map((field, i) => (
-              <div key={field.name} className="relative animate-slide-right" style={{ animationDelay: `${300 + i * 80}ms` }}>
-                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">{field.icon}</div>
-                <input name={field.name} type={field.type} placeholder={field.placeholder} required={field.required}
-                  className={inputClass} value={formData[field.name]} onChange={handleChange} />
+          {needsConfirmation ? (
+            <div className="text-center animate-scale-in">
+              <div className="w-14 h-14 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <CheckCircle className="h-7 w-7 text-teal-600" />
               </div>
-            ))}
+              <h2 className="text-xl font-bold text-slate-900 mb-2">Confirm your email</h2>
+              <p className="text-slate-500 text-sm mb-6">We sent a confirmation link to <strong className="break-all">{formData.email}</strong>. Open it, then sign in.</p>
+              <Link to="/login" className="inline-block bg-blue-600 text-white px-6 py-3 rounded-xl text-sm font-semibold hover:bg-blue-700">Go to sign in</Link>
+            </div>
+          ) : (
+            <>
+              <h2 className="text-2xl font-bold text-slate-900 mb-1 animate-slide-right">Create your account</h2>
+              <p className="text-slate-500 text-sm mb-8 animate-slide-right" style={{ animationDelay: '100ms' }}>Join Nucura, it's free</p>
 
-            {/* Doctor-only fields slide in when selected */}
-            {userType === "doctor" && (
-              <div className="space-y-3 animate-fade-up">
-                <div className="relative">
-                  <Stethoscope className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 h-4 w-4 pointer-events-none" />
-                  <select name="specialization" required className={inputClass}
-                   value={formData.specialization} onChange={handleChange}>
-                   <option value="">Select specialization</option>
-                   {specializations.map(s => <option key={s} value={s}>{s}</option>)}
-                  </select>
+              <div className="flex rounded-xl border border-slate-200 mb-6 bg-slate-100 p-1 gap-1 animate-slide-right" style={{ animationDelay: '200ms' }}>
+                {[
+                  { key: 'patient', label: 'Patient', icon: <User className="h-4 w-4 mr-1.5" /> },
+                  { key: 'doctor', label: 'Doctor', icon: <Stethoscope className="h-4 w-4 mr-1.5" /> }
+                ].map(t => (
+                  <button key={t.key} type="button" onClick={() => setUserType(t.key)}
+                    className={`flex-1 flex items-center justify-center py-2.5 px-3 rounded-lg text-sm font-medium transition-all duration-300 ${
+                      userType === t.key ? 'bg-white text-blue-700 shadow-sm scale-[1.02]' : 'text-slate-500 hover:text-slate-700'
+                    }`}>
+                    {t.icon}{t.label}
+                  </button>
+                ))}
               </div>
-                <input name="experience" type="text" placeholder="Years of experience"
-                  className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-                  value={formData.experience} onChange={handleChange} />
-              </div>
-            )}
 
-            {[
-              { name: 'password', placeholder: 'Password (min 6 characters)' },
-              { name: 'confirmPassword', placeholder: 'Confirm password' }
-            ].map((field, i) => (
-              <div key={field.name} className="relative animate-slide-right" style={{ animationDelay: `${620 + i * 80}ms` }}>
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 h-4 w-4" />
-                <input name={field.name} type="password" placeholder={field.placeholder} required
-                  className={inputClass} value={formData[field.name]} onChange={handleChange} />
-              </div>
-            ))}
+              {error && <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl text-sm mb-4 animate-scale-in">{error}</div>}
 
-            <button type="submit" disabled={loading}
-              className="animate-slide-right w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl text-sm font-semibold transition-all shadow-sm hover:shadow-lg hover:shadow-blue-200 active:scale-[0.98] disabled:opacity-50 mt-2"
-              style={{ animationDelay: '800ms' }}>
-              {loading ? "Creating account..." : "Create Account"}
-            </button>
-          </form>
+              <form onSubmit={handleSubmit} className="space-y-3">
+                {fields.map((field, i) => (
+                  <div key={field.name} className="relative animate-slide-right" style={{ animationDelay: `${300 + i * 80}ms` }}>
+                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">{field.icon}</div>
+                    <input name={field.name} type={field.type} placeholder={field.placeholder} required={field.required}
+                      className={inputClass} value={formData[field.name]} onChange={handleChange} />
+                  </div>
+                ))}
 
-          <p className="text-center text-sm text-slate-500 mt-6 animate-fade-in" style={{ animationDelay: '900ms' }}>
-            Already have an account?{" "}
-            <Link to="/login" className="text-blue-600 hover:text-blue-700 font-semibold">Sign in</Link>
-          </p>
+                {userType === "doctor" && (
+                  <div className="space-y-3 animate-fade-up">
+                    <div className="relative">
+                      <Stethoscope className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 h-4 w-4 pointer-events-none" />
+                      <select name="specialization" required className={inputClass}
+                        value={formData.specialization} onChange={handleChange}>
+                        <option value="">Select specialization</option>
+                        {specializations.map(s => <option key={s} value={s}>{s}</option>)}
+                      </select>
+                    </div>
+                    <input name="experience" type="number" min="0" inputMode="numeric" placeholder="Years of experience"
+                      className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                      value={formData.experience} onChange={handleChange} />
+                    <div className="relative">
+                      <BadgeCheck className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 h-4 w-4" />
+                      <input name="pmdcNumber" type="text" required placeholder="PMDC registration number"
+                        className={inputClass} value={formData.pmdcNumber} onChange={handleChange} />
+                    </div>
+                    <p className="text-xs text-slate-500 bg-blue-50 border border-blue-100 rounded-xl px-3 py-2">
+                      Your profile is reviewed by our team and will appear in search results once approved.
+                    </p>
+                  </div>
+                )}
+
+                {[
+                  { name: 'password', placeholder: 'Password (min 8 characters)' },
+                  { name: 'confirmPassword', placeholder: 'Confirm password' }
+                ].map((field, i) => (
+                  <div key={field.name} className="relative animate-slide-right" style={{ animationDelay: `${620 + i * 80}ms` }}>
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 h-4 w-4" />
+                    <input name={field.name} type="password" placeholder={field.placeholder} required
+                      className={inputClass} value={formData[field.name]} onChange={handleChange} />
+                  </div>
+                ))}
+
+                <button type="submit" disabled={loading}
+                  className="animate-slide-right w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl text-sm font-semibold transition-all shadow-sm hover:shadow-lg hover:shadow-blue-200 active:scale-[0.98] disabled:opacity-50 mt-2"
+                  style={{ animationDelay: '800ms' }}>
+                  {loading ? "Creating account..." : "Create Account"}
+                </button>
+              </form>
+
+              <p className="text-center text-sm text-slate-500 mt-6 animate-fade-in" style={{ animationDelay: '900ms' }}>
+                Already have an account?{" "}
+                <Link to="/login" className="text-blue-600 hover:text-blue-700 font-semibold">Sign in</Link>
+              </p>
+            </>
+          )}
         </div>
       </div>
     </div>
