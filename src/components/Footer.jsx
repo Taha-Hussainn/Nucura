@@ -83,14 +83,13 @@ const Footer = () => {
               <h3 className="text-white font-bold text-lg">Stay updated with Nucura</h3>
               <p className="text-slate-400 text-sm mt-1">Health tips and platform updates, straight to your inbox.</p>
             </div>
-            <form onSubmit={handleSubscribe} className="flex w-full md:w-auto gap-2">
+            <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row w-full md:w-auto gap-2">
               <input
                 type="email" required placeholder="Your email address"
                 value={email} onChange={(e) => setEmail(e.target.value)}
-                className="flex-1 md:w-64 bg-slate-800/80 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-teal-400 transition"
-              />
+                className="w-full min-w-0 sm:flex-1 md:w-64 bg-slate-800/80 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-teal-400 transition"              />
               <button type="submit"
-                className="bg-teal-500 hover:bg-teal-400 text-white px-4 py-2.5 rounded-xl text-sm font-semibold flex items-center transition-all hover:scale-105 active:scale-95">
+                className="bg-teal-500 hover:bg-teal-400 text-white px-4 py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center shrink-0 transition-all hover:scale-105 active:scale-95">
                 {subscribed ? 'Subscribed!' : <>Subscribe<Send className="h-4 w-4 ml-2" /></>}
               </button>
             </form>
