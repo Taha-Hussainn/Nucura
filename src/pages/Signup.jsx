@@ -58,10 +58,8 @@ const Signup = () => {
         <div className="absolute -top-20 -left-20 w-80 h-80 bg-white/10 rounded-full blur-3xl animate-pulse" />
         <div className="absolute -bottom-24 -right-16 w-80 h-80 bg-teal-300/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
 
-        <Link to="/" className="relative flex items-center space-x-2 animate-slide-left">
-          <span className="bg-white rounded-2xl px-4 py-2 shadow-lg">
-          <img src="/logo-horizontal.png" alt="Nucura" className="h-10 w-auto object-contain" />
-          </span>
+        <Link to="/" className="relative inline-block animate-slide-left">
+          <img src="/logo-horizontal-white.png" alt="Nucura" className="h-12 w-auto object-contain" />
         </Link>
 
         <div className="relative">
@@ -87,9 +85,8 @@ const Signup = () => {
 
       <div className="flex-1 flex items-center justify-center p-6 sm:p-8 overflow-y-auto">
         <div className="w-full max-w-md py-8">
-          <div className="lg:hidden flex items-center space-x-2 mb-8 animate-fade-in">
-            <img src="/logo.png" alt="Nucura" className="h-8 w-8 object-contain" style={{ mixBlendMode: 'multiply' }} />
-            <span className="text-xl font-bold text-blue-700">Nucura</span>
+          <div className="lg:hidden mb-8 animate-fade-in">
+            <img src="/logo-horizontal.png" alt="Nucura" className="h-10 w-auto object-contain" />
           </div>
 
           {needsConfirmation ? (

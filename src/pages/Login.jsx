@@ -1,13 +1,12 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Mail, Lock, User, Stethoscope, Shield, Eye, EyeOff } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff } from "lucide-react";
 import { signIn } from "../api/auth";
 import { useAuth } from "../context/AuthContext";
 
 const Login = () => {
   const navigate = useNavigate();
   const { setCurrentUser } = useAuth();
-  const [loginType, setLoginType] = useState("patient");
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
@@ -30,12 +29,6 @@ const Login = () => {
     setLoading(false);
   };
 
-  const types = [
-    { key: "patient", label: "Patient", icon: <User className="h-4 w-4 mr-1.5" /> },
-    { key: "doctor", label: "Doctor", icon: <Stethoscope className="h-4 w-4 mr-1.5" /> },
-    { key: "admin", label: "Admin", icon: <Shield className="h-4 w-4 mr-1.5" /> }
-  ];
-
   const inputClass = "w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white";
 
   return (
@@ -45,10 +38,8 @@ const Login = () => {
         <div className="absolute -top-20 -left-20 w-80 h-80 bg-white/10 rounded-full blur-3xl animate-pulse" />
         <div className="absolute -bottom-24 -right-16 w-80 h-80 bg-teal-300/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
 
-        <Link to="/" className="relative flex items-center space-x-2 animate-slide-left">
-          <span className="bg-white rounded-2xl px-4 py-2 shadow-lg">
-          <img src="/logo-horizontal.png" alt="Nucura" className="h-10 w-auto object-contain" />
-          </span>           
+        <Link to="/" className="relative inline-block animate-slide-left">
+          <img src="/logo-horizontal-white.png" alt="Nucura" className="h-12 w-auto object-contain" />
         </Link>
 
         <div className="relative">
@@ -75,24 +66,12 @@ const Login = () => {
       {/* Right Panel */}
       <div className="flex-1 flex items-center justify-center p-8">
         <div className="w-full max-w-md">
-          <div className="lg:hidden flex items-center space-x-2 mb-8 animate-fade-in">
-            <img src="/logo.png" alt="Nucura" className="h-8 w-8 object-contain" style={{ mixBlendMode: 'multiply' }} />
-            <span className="text-xl font-bold text-blue-700">Nucura</span>
+          <div className="lg:hidden mb-8 animate-fade-in">
+            <img src="/logo-horizontal.png" alt="Nucura" className="h-10 w-auto object-contain" />
           </div>
 
           <h2 className="text-2xl font-bold text-slate-900 mb-1 animate-slide-right">Sign in to your account</h2>
-          <p className="text-slate-500 text-sm mb-8 animate-slide-right" style={{ animationDelay: '100ms' }}>Access your healthcare portal</p>
-
-          <div className="flex rounded-xl border border-slate-200 mb-6 bg-slate-100 p-1 gap-1 animate-slide-right" style={{ animationDelay: '200ms' }}>
-            {types.map(t => (
-              <button key={t.key} type="button" onClick={() => setLoginType(t.key)}
-                className={`flex-1 flex items-center justify-center py-2 px-3 rounded-lg text-sm font-medium transition-all duration-300 ${
-                  loginType === t.key ? 'bg-white text-blue-700 shadow-sm scale-[1.02]' : 'text-slate-500 hover:text-slate-700'
-                }`}>
-                {t.icon}{t.label}
-              </button>
-            ))}
-          </div>
+          <p className="text-slate-500 text-sm mb-8 animate-slide-right" style={{ animationDelay: '100ms' }}>Patients and doctors sign in here</p>
 
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl text-sm mb-4 animate-scale-in">{error}</div>

@@ -11,6 +11,7 @@ import UserDashboard from './pages/UserDashboard'
 import DoctorDashboard from './pages/DoctorDashboard'
 import AdminDashboard from './pages/AdminDashboard'
 import Login from './pages/Login'
+import AdminLogin from './pages/AdminLogin'
 import Signup from './pages/Signup'
 import ForgotPassword from './pages/ForgotPassword'
 import ResetPassword from './pages/ResetPassword'
@@ -42,6 +43,7 @@ function App() {
             <Route path="/doctors" element={<DoctorsList />} />
             <Route path="/doctor/:id" element={<DoctorProfile />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/adminlogin" element={<AdminLogin />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
