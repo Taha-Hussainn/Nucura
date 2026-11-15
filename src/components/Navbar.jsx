@@ -39,15 +39,7 @@ const Navbar = () => {
 
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2 group">
-            <img
-              src="/logo.png"
-              alt="Nucura Logo"
-              className="h-9 w-9 object-contain rounded-lg"
-              style={{ mixBlendMode: 'multiply' }}
-            />
-            <span className="text-xl font-bold text-blue-700 group-hover:text-blue-600 transition-colors">
-              Nucura
-            </span>
+            <img src="/logo-horizontal.png" alt="Nucura" className="h-10 w-auto object-contain" />
           </Link>
 
           {/* Desktop Nav Links */}

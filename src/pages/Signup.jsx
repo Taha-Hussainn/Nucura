@@ -59,8 +59,9 @@ const Signup = () => {
         <div className="absolute -bottom-24 -right-16 w-80 h-80 bg-teal-300/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
 
         <Link to="/" className="relative flex items-center space-x-2 animate-slide-left">
-          <img src="/logo.png" alt="Nucura" className="h-9 w-9 object-contain" style={{ mixBlendMode: 'screen' }} />
-          <span className="text-2xl font-bold text-white">Nucura</span>
+          <span className="bg-white rounded-2xl px-4 py-2 shadow-lg">
+          <img src="/logo-horizontal.png" alt="Nucura" className="h-10 w-auto object-contain" />
+          </span>
         </Link>
 
         <div className="relative">
