@@ -101,7 +101,7 @@ const Footer = () => {
           {/* Brand + socials */}
           <div {...anim(150)}>
             <Link to="/" className="inline-flex items-center space-x-2 mb-4 group">
-              <img src="/logo-horizontal-dark.png" alt="Nucura" className="h-11 w-auto object-contain" />
+              <img src="/logo-horizontal-white.png" alt="Nucura" className="h-11 w-auto object-contain" />
             </Link>
             <p className="text-sm text-slate-400 leading-relaxed mb-5">
               Pakistan's digital healthcare platform connecting patients with verified doctors.
